@@ -1,0 +1,6 @@
+Execute these testfile in asciibetical order to check the functioning of the
+types and providers.
+
+They try to create databases, users, grants, check for their existance, change
+attributes, and remove them again.
+

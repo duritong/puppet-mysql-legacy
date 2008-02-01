@@ -1,0 +1,13 @@
+#!/bin/bash
+
+export RUBYLIB=${RUBYLIB:-../plugins}
+OPTIONS="$*"
+OPTIONS="${OPTIONS:---trace}"
+
+find -iname \*.pp | sort | while read current; do
+	echo "Running $current"
+	puppet $OPTIONS $current
+	echo "Running $current again"
+	puppet $OPTIONS $current
+	echo
+done

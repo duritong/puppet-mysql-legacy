@@ -4,22 +4,42 @@
 
 class mysql::server {
 
-	package { "mysql":
+    $modulename = "mysql"
+    $pkgname = "mysql"
+    $gentoocat = "dev-db"
+    $cnfname = "my.cnf"
+    $cnfpath = "/etc/mysql"
+
+    package { $pkgname:
         ensure => present,
         category => $operatingsystem ? {
-            gentoo => 'dev-db',
+            gentoo => $gentoocat,
             default => '',
         }
+    }
+
+    file{
+        "${cnfpath}/${cnfname}":
+            source => [
+                "puppet://$server/dist/${modulename}/${fqdn}/${cnfname}",
+                "puppet://$server/${modulename}/${fqdn}/${cnfname}",
+                "puppet://$server/${modulename}/${cnfname}"
+            ],
+            ensure => file,
+            owner => root,
+            group => 0,
+            mode => 0444,
+            require => Package[$pkgname],
+    }
+
+	service { $pkgname:
+		ensure => running,
+		hasstatus => true,
+		require => Package[$pkgname],
 	}
 
 	munin::plugin {
 		[mysql_bytes, mysql_queries, mysql_slowqueries, mysql_threads]:
-	}
-
-	service { mysql:
-		ensure => running,
-		hasstatus => true,
-		require => Package["mysql"],
 	}
 
 	# Collect all databases and users

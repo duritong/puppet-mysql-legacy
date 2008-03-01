@@ -30,6 +30,7 @@ class mysql::server {
             group => 0,
             mode => 0444,
             require => Package[$pkgname],
+            notify => Service[$pkgname],
     }
 
 	service { $pkgname:

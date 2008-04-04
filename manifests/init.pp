@@ -20,7 +20,7 @@ class mysql::server::base {
             source => [
                 "puppet://$server/files/mysql/${fqdn}/my.cnf",
                 "puppet://$server/files/mysql/my.cnf",
-                "puppet://$server/mysql/my.cnf",
+                "puppet://$server/mysql/my.cnf"
             ],
             ensure => file,
             owner => root,

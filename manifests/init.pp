@@ -1,42 +1,39 @@
 # mysql.pp
 # Copyright (C) 2007 David Schmitt <david@schmitt.edv-bus.at>
 # See LICENSE for the full license granted to you.
+# changed by immerda project group (admin(at)immerda.ch)
 
 class mysql::server {
+    case $operatingsystem {
+        gentoo: { include mysql::server::gentoo }
+        default: { include mysql::server::base }
+    }
+}
 
-    $modulename = "mysql"
-    $pkgname = "mysql"
-    $gentoocat = "dev-db"
-    $cnfname = "my.cnf"
-    $cnfpath = "/etc/mysql"
-
-    package { $pkgname:
+class mysql::server::base {
+    package { mysql:
         ensure => present,
-        category => $operatingsystem ? {
-            gentoo => $gentoocat,
-            default => '',
-        }
     }
 
     file{
-        "${cnfpath}/${cnfname}":
+        "/etc/mysql/my.cnf":
             source => [
-                "puppet://$server/dist/${modulename}/${fqdn}/${cnfname}",
-                "puppet://$server/${modulename}/${fqdn}/${cnfname}",
-                "puppet://$server/${modulename}/${cnfname}"
+                "puppet://$server/files/mysql/${fqdn}/my.cnf",
+                "puppet://$server/files/mysql/my.cnf",
+                "puppet://$server/mysql/my.cnf",
             ],
             ensure => file,
             owner => root,
             group => 0,
             mode => 0444,
-            require => Package[$pkgname],
-            notify => Service[$pkgname],
+            require => Package[mysql],
+            notify => Service[mysql],
     }
 
-	service { $pkgname:
+	service { mysql:
 		ensure => running,
 		hasstatus => true,
-		require => Package[$pkgname],
+		require => Package[mysql],
 	}
 
 	munin::plugin {
@@ -47,5 +44,10 @@ class mysql::server {
 	Mysql_database<<||>>
 	Mysql_user<<||>>
 	Mysql_grant<<||>>
+}
 
+class mysql::server::gentoo inherits mysql::server::base {
+    Package[mysql] {
+        category => 'dev-db',
+    }
 }

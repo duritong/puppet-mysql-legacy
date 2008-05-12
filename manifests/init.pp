@@ -8,6 +8,10 @@ class mysql::server {
         gentoo: { include mysql::server::gentoo }
         default: { include mysql::server::base }
     }
+
+    if $selinux {
+        include mysql::selinux
+    }
 }
 
 class mysql::server::base {

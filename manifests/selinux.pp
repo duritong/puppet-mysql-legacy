@@ -12,5 +12,5 @@ class mysql::selinux::gentoo {
         category => 'sec-policy',
         require => Package[mysql],
     }
-    selinux::loadmodule {"mysql": }
+    selinux::loadmodule {'mysql': }
 }

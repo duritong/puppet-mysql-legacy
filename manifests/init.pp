@@ -86,11 +86,6 @@ class mysql::server::base {
 		require => Package[mysql],
 	}
 
-	munin::plugin {
-		[mysql_bytes, mysql_queries, mysql_slowqueries, mysql_threads]:
-		require => [ Package[mysql-server], Exec['set_mysql_rootpw'] ],
-	}
-
 	# Collect all databases and users
 	Mysql_database<<| tag == "mysql_${fqdn}" |>>
 	Mysql_user<<| tag == "mysql_${fqdn}"  |>>

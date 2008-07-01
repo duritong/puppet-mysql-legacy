@@ -1,1 +1,0 @@
-00 01 * * * root /usr/bin/mysqldump --all-databases --all | gzip > /var/lib/mysql/mysqldump.sql.gz && chmod 600 /var/lib/mysql/mysqldump.sql.gz

@@ -23,8 +23,8 @@ class mysql::server {
     }
 
     # avoid problem with bootstrapping
-    case $mysql_exists {
-        'true': {
+    #case $mysql_exists {
+    #    'true': {
             if $selinux {
                 include mysql::selinux
             }
@@ -32,8 +32,8 @@ class mysql::server {
             if $use_munin {
                 include mysql::munin
         	}
-        }
-    }
+    #    }
+    #}
 }
 
 class mysql::server::base {

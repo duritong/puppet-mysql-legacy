@@ -1,6 +1,6 @@
 [mysqld]
 datadir=/var/lib/mysql
-log-bin=/var/lib/mysql
+log-bin=mysql-bin
 socket=/var/lib/mysql/mysql.sock
 # Default to using old password format for compatibility with mysql 3.x
 # clients (those using the mysqlclient10 compatibility package).
@@ -10,7 +10,7 @@ bind-address=127.0.0.1
      
 [mysql.server]
 user=mysql
-basedir=/var/lib
+basedir=/usr
 
 [mysqld_safe]
 log-error=/var/log/mysqld.log

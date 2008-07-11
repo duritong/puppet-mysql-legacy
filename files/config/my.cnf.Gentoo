@@ -51,7 +51,7 @@ socket 						= /var/run/mysqld/mysqld.sock
 pid-file 					= /var/run/mysqld/mysqld.pid
 log-error 					= /var/log/mysql/mysqld.err
 basedir 					= /usr
-datadir 					= /var/lib/mysql/data
+datadir 					= /var/lib/mysql
 log-bin 					= /var/lib/mysql
 skip-locking
 key_buffer 					= 16M

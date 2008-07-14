@@ -53,7 +53,7 @@ class mysql::server::base {
     file{'/var/lib/mysql/data':
         ensure => directory,
         require => Package[mysql-server],
-        before => Service[mysql],
+        before => File['/etc/mysql/my.cnf'],
         owner => mysql, group => mysql, mode => 0755;
     }
 

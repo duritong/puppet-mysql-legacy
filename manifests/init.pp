@@ -50,6 +50,13 @@ class mysql::server::base {
             owner => root, group => 0, mode => 0644;
     }
 
+    file{'/var/lib/mysql/data':
+        ensure => directory,
+        require => Package[mysql-server],
+        before => Service[mysql],
+        owner => mysql, group => mysql, mode => 0755;
+    }
+
     case $mysql_rootpw {
         '': { fail("You need to define a mysql root password! Please set \$mysql_rootpw in your site.pp or host config") }
     }

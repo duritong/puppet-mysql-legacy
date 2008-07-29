@@ -1,6 +1,7 @@
 [mysqld]
 datadir=/var/lib/mysql/data
 log-bin=/var/lib/mysql/mysql-bin
+expire_logs_days=5
 socket=/var/lib/mysql/mysql.sock
 # Default to using old password format for compatibility with mysql 3.x
 # clients (those using the mysqlclient10 compatibility package).

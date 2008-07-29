@@ -53,6 +53,7 @@ log-error 					= /var/log/mysql/mysqld.err
 basedir 					= /usr
 datadir 					= /var/lib/mysql
 log-bin 					= /var/lib/mysql
+expire_logs_days            = 5
 skip-locking
 key_buffer 					= 16M
 max_allowed_packet 			= 1M

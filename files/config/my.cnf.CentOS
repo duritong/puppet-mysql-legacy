@@ -8,7 +8,45 @@ socket=/var/lib/mysql/mysql.sock
 old_passwords=0
 
 bind-address=127.0.0.1
+
+skip-bdb
+
+# Query cache is used to cache SELECT results and later return them
+# without actual executing the same query once again. Having the query
+# cache enabled may result in significant speed improvements, if your
+# have a lot of identical queries and rarely changing tables. See the
+# "Qcache_lowmem_prunes" status variable to check if the current value
+# is high enough for your load.
+# Note: In case your tables change very often or if your queries are
+# textually different every time, the query cache may result in a
+# slowdown instead of a performance improvement.
+query_cache_size = 64M
+
+# Log slow queries. Slow queries are queries which take more than the
+# amount of time defined in "long_query_time" or which do not use
+# indexes well, if log_long_format is enabled. It is normally good idea
+# to have this turned on if you frequently add new queries to the
+# system.
+log_slow_queries
+
+# How many threads we should keep in a cache for reuse. When a client
+# disconnects, the client's threads are put in the cache if there aren't
+# more than thread_cache_size threads from before.  This greatly reduces
+# the amount of thread creations needed if you have a lot of new
+# connections. (Normally this doesn't give a notable performance
+# improvement if you have a good thread implementation.)
+thread_cache_size = 4
      
+# InnoDB, unlike MyISAM, uses a buffer pool to cache both indexes and
+# row data. The bigger you set this the less disk I/O is needed to
+# access data in tables. On a dedicated database server you may set this
+# parameter up to 80% of the machine physical memory size. Do not set it
+# too large, though, because competition of the physical memory may
+# cause paging in the operating system.  Note that on 32bit systems you
+# might be limited to 2-3.5G of user level memory per process, so do not
+# set it too high.
+innodb_buffer_pool_size = 50MB
+
 [mysql.server]
 user=mysql
 basedir=/usr

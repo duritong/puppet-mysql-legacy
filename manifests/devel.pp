@@ -1,5 +1,5 @@
 class mysql::devel{
-  package{'mysql-devel':
-    ensure => present,
-  }
+    package{'mysql-devel':
+        ensure => present,
+    }
 }

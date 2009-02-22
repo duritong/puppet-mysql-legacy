@@ -11,6 +11,6 @@ class mysql::disable {
        ensure => stopped,
        enable => false,
        hasstatus => true,
-       require => Package[mysql],
+       require => Package['mysql-server'],
    }
 }

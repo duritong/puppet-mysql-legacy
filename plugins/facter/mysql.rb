@@ -3,6 +3,6 @@ Facter.add("mysql_exists") do
     
     setcode do
         mysqlexists = system "which mysql > /dev/null 2>&1"
-        ($?.exitstatus == 0).to_s
+        ($?.exitstatus == 0)
     end
 end

@@ -8,6 +8,6 @@ class mysql::server {
       include mysql::munin
     }
     if $use_shorewall {
-      include shorewal::rules::mysql
+      include shorewall::rules::mysql
     }
 }

@@ -6,8 +6,8 @@ class mysql::server::base {
             source => [
                 "puppet://$server/files/mysql/${fqdn}/my.cnf",
                 "puppet://$server/files/mysql/my.cnf",
-                "puppet://$server/mysql/config/my.cnf.${operatingsystem}",
-                "puppet://$server/mysql/config/my.cnf"
+                "puppet://$server/modules/mysql/config/my.cnf.${operatingsystem}",
+                "puppet://$server/modules/mysql/config/my.cnf"
             ],
             ensure => file,
             require => Package[mysql-server],
@@ -32,7 +32,7 @@ class mysql::server::base {
         '': { fail("You need to define a mysql root password! Please set \$mysql_rootpw in your site.pp or host config") }
     }
     file{'/opt/bin/setmysqlpass.sh':
-        source => "puppet://$server/mysql/config/${operatingsystem}/setmysqlpass.sh",
+        source => "puppet://$server/modules/mysql/config/${operatingsystem}/setmysqlpass.sh",
         require => Package[mysql-server],
         owner => root, group => 0, mode => 0500;
     }        
@@ -47,13 +47,13 @@ class mysql::server::base {
         require => [ File['/opt/bin/setmysqlpass.sh'], Package[mysql-server] ],
     }
    file{'/etc/cron.d/mysql_backup.cron':
-       source => [ "puppet://$server/mysql/backup/mysql_backup.cron.${operatingsystem}",
-                   "puppet://$server/mysql/backup/mysql_backup.cron" ],
+       source => [ "puppet://$server/modules/mysql/backup/mysql_backup.cron.${operatingsystem}",
+                   "puppet://$server/modules/mysql/backup/mysql_backup.cron" ],
        require => [ Exec[set_mysql_rootpw], File['/root/.my.cnf'] ],
        owner => root, group => 0, mode => 0600;
    }
    file{'/etc/cron.weekly/mysql_optimize_tables.rb':
-       source => "puppet://$server/mysql/optimize/optimize_tables.rb",
+       source => "puppet://$server/modules/mysql/optimize/optimize_tables.rb",
        require => [ Exec[set_mysql_rootpw], File['/root/.my.cnf'] ],
        owner => root, group => 0, mode => 0700;
    }

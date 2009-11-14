@@ -4,8 +4,8 @@ class mysql::server::base {
     }
     file{'/etc/mysql/my.cnf':
             source => [
-                "puppet://$server/files/mysql/${fqdn}/my.cnf",
-                "puppet://$server/files/mysql/my.cnf",
+                "puppet://$server/modules/site-mysql/${fqdn}/my.cnf",
+                "puppet://$server/modules/site-mysql/my.cnf",
                 "puppet://$server/modules/mysql/config/my.cnf.${operatingsystem}",
                 "puppet://$server/modules/mysql/config/my.cnf"
             ],

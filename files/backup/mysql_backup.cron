@@ -1,1 +1,1 @@
-00 01 * * * root /usr/bin/mysqldump --default-character-set=utf8 --all-databases --all --flush-logs --lock-all-tables | gzip > /var/lib/mysql/data/mysqldump.sql.gz && chmod 600 /var/lib/mysql/data/mysqldump.sql.gz
+00 01 * * * root /usr/bin/mysqldump --default-character-set=utf8 --all-databases --all --flush-logs --lock-tables --single-transaction | gzip > /var/lib/mysql/data/mysqldump.sql.gz && chmod 600 /var/lib/mysql/data/mysqldump.sql.gz

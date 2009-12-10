@@ -2,7 +2,7 @@ class mysql::server::centos inherits mysql::server::clientpackage {
     Service[mysql]{
         name  => 'mysqld',
     }
-    File['/etc/mysql/my.cnf']{
+    File['mysql_main_cnf']{
         path => '/etc/my.cnf',
     }
 

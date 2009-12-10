@@ -1,15 +1,15 @@
 class mysql::server::clientpackage inherits mysql::server::base {
     include mysql::client
-    File['/opt/bin/setmysqlpass.sh']{
+    File['mysql_setmysqlpass.sh']{
         require +> Package[mysql],
     }
-    File['/root/.my.cnf']{
+    File['mysql_root_cnf']{
         require +> Package[mysql],
     }
-    Exec['set_mysql_rootpw']{
+    Exec['mysql_set_rootpw']{
         require +> Package[mysql],
     }
-    File['/etc/cron.d/mysql_backup.cron']{
+    File['mysql_backup_cron']{
         require +> Package[mysql],
     }
 }

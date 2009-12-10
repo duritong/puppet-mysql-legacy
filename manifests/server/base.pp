@@ -37,8 +37,8 @@ class mysql::server::base {
     }
     
     file { 'mysql_setmysqlpass.sh':
-        path => '/usr/local/sbin/setmysqlpass.sh',
-        source => "puppet://$server/modules/mysql/config/${operatingsystem}/setmysqlpass.sh",
+        path => "${mysql_moduledir}/server/setmysqlpass.sh",
+        source => "puppet://${server}/modules/mysql/scripts/${operatingsystem}/setmysqlpass.sh",
         require => Package['mysql-server'],
         owner => root, group => 0, mode => 0500;
     }    
@@ -52,36 +52,29 @@ class mysql::server::base {
     }
     
     exec { 'mysql_set_rootpw':
-        command => "/usr/local/sbin/setmysqlpass.sh $mysql_rootpw",
+        command => "${mysql_moduledir}/server/setmysqlpass.sh ${mysql_rootpw}",
         unless => "mysqladmin -uroot status > /dev/null",
         require => [ File['mysql_setmysqlpass.sh'], Package['mysql-server'] ],
         refreshonly => true,
     }
     
-   file { 'mysql_backup_cron':
-       path => '/etc/cron.d/mysql_backup.cron',
-       source => [ "puppet://$server/modules/mysql/backup/mysql_backup.cron.${operatingsystem}",
-                   "puppet://$server/modules/mysql/backup/mysql_backup.cron" ],
-       require => [ Exec['mysql_set_rootpw'], File['mysql_root_cnf'] ],
-       owner => root, group => 0, mode => 0600;
-   }
+    if ($mysql_backup_cron) {
+        include mysql::server::cron::backup
+    }
+    
+    if ($mysql_optimize_cron) {
+        include mysql::server::cron::optimize
+    }
    
-   file { 'mysql_optimize_cron':
-       path => '/etc/cron.weekly/mysql_optimize_tables.rb',
-       source => "puppet://$server/modules/mysql/optimize/optimize_tables.rb",
-       require => [ Exec['mysql_set_rootpw'], File['mysql_root_cnf'] ],
-       owner => root, group => 0, mode => 0700;
-   }
-   
-   service { 'mysql':
-       ensure => running,
-       enable => true,
-       hasstatus => true,
-       require => Package['mysql-client'],
+    service { 'mysql':
+        ensure => running,
+        enable => true,
+        hasstatus => true,
+        require => Package['mysql-client'],
    }
 
-  # Collect all databases and users
-  Mysql_database<<| tag == "mysql_${fqdn}" |>>
-  Mysql_user<<| tag == "mysql_${fqdn}"  |>>
-  Mysql_grant<<| tag == "mysql_${fqdn}" |>>
+    # Collect all databases and users
+    Mysql_database<<| tag == "mysql_${fqdn}" |>>
+    Mysql_user<<| tag == "mysql_${fqdn}"  |>>
+    Mysql_grant<<| tag == "mysql_${fqdn}" |>>
 }

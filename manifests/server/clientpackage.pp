@@ -9,7 +9,4 @@ class mysql::server::clientpackage inherits mysql::server::base {
     Exec['mysql_set_rootpw']{
         require +> Package['mysql-client'],
     }
-    File['mysql_backup_cron']{
-        require +> Package['mysql-client'],
-    }
 }

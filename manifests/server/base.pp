@@ -44,12 +44,14 @@ class mysql::server::base {
         path => '/root/.my.cnf',
         content => template('mysql/root/my.cnf.erb'),
         require => [ Package[mysql-server] ],
-        owner => root, group => 0, mode => 0400;
+        owner => root, group => 0, mode => 0400,
+        notify => Exec['mysql_set_rootpw'],
     }
     exec { 'mysql_set_rootpw':
         command => "/usr/local/sbin/setmysqlpass.sh $mysql_rootpw",
         unless => "mysqladmin -uroot status > /dev/null",
         require => [ File['mysql_setmysqlpass.sh'], Package[mysql-server] ],
+        refreshonly => true,
     }
    file { 'mysql_backup_cron':
        path => '/etc/cron.d/mysql_backup.cron',

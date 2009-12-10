@@ -11,14 +11,15 @@ class mysql::server::base {
                 "puppet://$server/modules/mysql/config/my.cnf"
             ],
             ensure => file,
-            require => Package[mysql-server],
-            notify => Service[mysql],
+            require => Package['mysql-server'],
+            notify => Service['mysql'],
             owner => root, group => 0, mode => 0644;
     }
+    
     file { 'mysql_data_dir':
         path => '/var/lib/mysql/data',
         ensure => directory,
-        require => Package[mysql-server],
+        require => Package['mysql-server'],
         before => File['mysql_main_cnf'],
         owner => mysql, group => mysql, mode => 0755;
     }
@@ -26,7 +27,7 @@ class mysql::server::base {
     file { 'mysql_ibdata1':
         path => '/var/lib/mysql/data/ibdata1',
         ensure => file,
-        require => Package[mysql-server],
+        require => Package['mysql-server'],
         before => File['mysql_setmysqlpass.sh'],
         owner => mysql, group => mysql, mode => 0660;
     }
@@ -34,43 +35,49 @@ class mysql::server::base {
     case $mysql_rootpw {
         '': { fail("You need to define a mysql root password! Please set \$mysql_rootpw in your site.pp or host config") }
     }
+    
     file { 'mysql_setmysqlpass.sh':
         path => '/usr/local/sbin/setmysqlpass.sh',
         source => "puppet://$server/modules/mysql/config/${operatingsystem}/setmysqlpass.sh",
-        require => Package[mysql-server],
+        require => Package['mysql-server'],
         owner => root, group => 0, mode => 0500;
-    }        
+    }    
+        
     file { 'mysql_root_cnf':
         path => '/root/.my.cnf',
         content => template('mysql/root/my.cnf.erb'),
-        require => [ Package[mysql-server] ],
+        require => [ Package['mysql-server'] ],
         owner => root, group => 0, mode => 0400,
         notify => Exec['mysql_set_rootpw'],
     }
+    
     exec { 'mysql_set_rootpw':
         command => "/usr/local/sbin/setmysqlpass.sh $mysql_rootpw",
         unless => "mysqladmin -uroot status > /dev/null",
-        require => [ File['mysql_setmysqlpass.sh'], Package[mysql-server] ],
+        require => [ File['mysql_setmysqlpass.sh'], Package['mysql-server'] ],
         refreshonly => true,
     }
+    
    file { 'mysql_backup_cron':
        path => '/etc/cron.d/mysql_backup.cron',
        source => [ "puppet://$server/modules/mysql/backup/mysql_backup.cron.${operatingsystem}",
                    "puppet://$server/modules/mysql/backup/mysql_backup.cron" ],
-       require => [ Exec[mysql_set_rootpw], File['mysql_root_cnf'] ],
+       require => [ Exec['mysql_set_rootpw'], File['mysql_root_cnf'] ],
        owner => root, group => 0, mode => 0600;
    }
+   
    file { 'mysql_optimize_cron':
        path => '/etc/cron.weekly/mysql_optimize_tables.rb',
        source => "puppet://$server/modules/mysql/optimize/optimize_tables.rb",
-       require => [ Exec[mysql_set_rootpw], File['mysql_root_cnf'] ],
+       require => [ Exec['mysql_set_rootpw'], File['mysql_root_cnf'] ],
        owner => root, group => 0, mode => 0700;
    }
-   service {mysql:
+   
+   service { 'mysql':
        ensure => running,
        enable => true,
        hasstatus => true,
-       require => Package[mysql],
+       require => Package['mysql-client'],
    }
 
   # Collect all databases and users

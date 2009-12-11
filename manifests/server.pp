@@ -11,7 +11,10 @@ class mysql::server {
     }
     
     if $use_munin {
-      include mysql::munin
+      case $operatingsystem {
+        debian: { include mysql::server::munin::debian }
+        default: { include mysql::server::munin::default }
+      }
     }
     
     if $use_shorewall {

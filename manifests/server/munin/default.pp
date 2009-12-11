@@ -1,6 +1,6 @@
-# manifests/munin.pp
+# manifests/server/munin/default.pp
 
-class mysql::munin {
+class mysql::server::munin::default {
     case $munin_mysql_password {
         '': { fail("please specify \$munin_mysql_password to enable mysql munin plugin")}
     }

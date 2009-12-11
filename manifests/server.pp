@@ -16,7 +16,11 @@ class mysql::server {
         default: { include mysql::server::munin::default }
       }
     }
-    
+
+    if $use_nagios {
+      include mysql::server::nagios
+    }
+
     if $use_shorewall {
       include shorewall::rules::mysql
     }

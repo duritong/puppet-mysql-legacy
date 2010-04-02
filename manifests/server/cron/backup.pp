@@ -7,7 +7,6 @@ class mysql::server::cron::backup {
 
     file { 'mysql_backup_dir':
         path => $real_mysql_backup_dir,
-        source => "puppet://${server}/modules/common/empty",
         ensure => directory,
         owner => root, group => 0, mode => 0700,
     }

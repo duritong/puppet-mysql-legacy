@@ -15,7 +15,10 @@ class mysql::server {
     }
 
     if $use_nagios {
-      include mysql::server::nagios
+      case $nagios_check_mysql {
+        false: { info("We don't do nagioschecks for mysql on ${fqdn}" ) }
+        default: { include mysql::server::nagios }
+      }
     }
 
     if $use_shorewall {

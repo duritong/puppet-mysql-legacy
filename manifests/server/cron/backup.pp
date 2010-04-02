@@ -11,7 +11,8 @@ class mysql::server::cron::backup {
         file { 'mysql_backup_dir':
           path => $real_mysql_backup_dir,
           ensure => directory,
-          owner => root, group => 0, mode => 0700,
+          before => Cron['mysql_backup_cron'],
+          owner => root, group => 0, mode => 0700;
         }
       }
     }
@@ -21,6 +22,6 @@ class mysql::server::cron::backup {
         user => 'root',
         minute => 0,
         hour => 1,
-        require => [ Exec['mysql_set_rootpw'], File['mysql_root_cnf'], File['mysql_backup_dir'] ],
+        require => [ Exec['mysql_set_rootpw'], File['mysql_root_cnf'] ],
    }
 }

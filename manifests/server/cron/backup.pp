@@ -5,10 +5,15 @@ class mysql::server::cron::backup {
         default => $mysql_backup_dir,
     }
 
-    file { 'mysql_backup_dir':
-        path => $real_mysql_backup_dir,
-        ensure => directory,
-        owner => root, group => 0, mode => 0700,
+    case $mysql_manage_backup_dir {
+      false: { info("We don't manage \$mysql_backup_dir ($mysql_backup_dir)") }
+      default: {
+        file { 'mysql_backup_dir':
+          path => $real_mysql_backup_dir,
+          ensure => directory,
+          owner => root, group => 0, mode => 0700,
+        }
+      }
     }
 
     cron { 'mysql_backup_cron':

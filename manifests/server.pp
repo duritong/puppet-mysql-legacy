@@ -1,8 +1,5 @@
 class mysql::server {
 
-    $mysql_moduledir = "${module_dir_path}/mysql"
-    module_dir { ['mysql', 'mysql/server']: }
-    
     case $operatingsystem {
       gentoo: { include mysql::server::gentoo }
       centos: { include mysql::server::centos }

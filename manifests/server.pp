@@ -1,6 +1,7 @@
 class mysql::server {
 
-    $mysql_moduledir = "${module_dir_path}/mysql"
+    include common::moduledir
+    $mysql_moduledir = "${common::moduledir::module_dir_path}/mysql"
     module_dir { ['mysql', 'mysql/server']: }
     
     case $operatingsystem {

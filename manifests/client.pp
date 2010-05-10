@@ -1,12 +1,8 @@
 class mysql::client {
 
-  package{ 'mysql':
-    name => $operatingsystem ? {
-        'debian' => 'mysql-client',
-        default => 'mysql',
-    },
-    alias => 'mysql-client',
-    ensure => present,
+  case $operatingsystem {
+    debian: { include mysql::client::debian }
+    default: { include mysql::client::base }
   }
 
   if $use_shorewall {

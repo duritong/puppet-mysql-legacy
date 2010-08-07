@@ -5,10 +5,10 @@ class mysql::server::base {
     file { 'mysql_main_cnf':
             path => '/etc/mysql/my.cnf',
             source => [
-                "puppet://$server/modules/site-mysql/${fqdn}/my.cnf",
-                "puppet://$server/modules/site-mysql/my.cnf",
-                "puppet://$server/modules/mysql/config/my.cnf.${operatingsystem}",
-                "puppet://$server/modules/mysql/config/my.cnf"
+                "puppet:///modules/site-mysql/${fqdn}/my.cnf",
+                "puppet:///modules/site-mysql/my.cnf",
+                "puppet:///modules/mysql/config/my.cnf.${operatingsystem}",
+                "puppet:///modules/mysql/config/my.cnf"
             ],
             ensure => file,
             require => Package['mysql-server'],

@@ -2,7 +2,7 @@ class mysql::server::cron::optimize {
 
    file { 'mysql_optimize_script':
        path => '/usr/local/sbin/optimize_mysql_tables.rb',
-       source => "puppet://${server}/modules/mysql/scripts/optimize_tables.rb",
+       source => "puppet:///modules/mysql/scripts/optimize_tables.rb",
        owner => root, group => 0, mode => 0700;
    }
 

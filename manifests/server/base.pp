@@ -38,7 +38,7 @@ class mysql::server::base {
     
     file { 'mysql_setmysqlpass.sh':
         path => '/usr/local/sbin/setmysqlpass.sh',
-        source => "puppet://${server}/modules/mysql/scripts/${operatingsystem}/setmysqlpass.sh",
+        source => "puppet:///modules/mysql/scripts/${operatingsystem}/setmysqlpass.sh",
         require => Package['mysql-server'],
         owner => root, group => 0, mode => 0500;
     }    

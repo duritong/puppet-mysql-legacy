@@ -1,13 +1,13 @@
 class mysql::server::cron::optimize {
 
    file { 'mysql_optimize_script':
-       path => "${mysql_moduledir}/server/optimize_tables.rb",
-       source => "puppet://${server}/modules/mysql/scripts/optimize_tables.rb",
+       path => '/usr/local/sbin/optimize_mysql_tables.rb',
+       source => "puppet:///modules/mysql/scripts/optimize_tables.rb",
        owner => root, group => 0, mode => 0700;
    }
 
     cron { 'mysql_optimize_cron':
-        command => "${mysql_moduledir}/server/optimize_tables.rb",
+        command => '/usr/local/sbin/optimize_mysql_tables.rb',
         user => 'root',
         minute => 40,
         hour => 6,

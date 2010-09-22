@@ -70,7 +70,7 @@ class mysql::server::base {
         ensure => running,
         enable => true,
         hasstatus => true,
-        require => Package['mysql-client'],
+        require => Package['mysql-server'],
    }
 
     # Collect all databases and users

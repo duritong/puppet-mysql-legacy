@@ -6,12 +6,12 @@ class mysql::server::base {
             path => '/etc/mysql/my.cnf',
             source => [
                 "puppet://modules/site-mysql/${fqdn}/my.cnf",
-                "puppet://modules/site-mysql/my.cnf.${operatingsystem}.{lsbdistcodename}",
-                "puppet://modules/site-mysql/my.cnf.${operatingsystem}",
-                "puppet://modules/site-mysql/my.cnf",
-                "puppet://modules/mysql/config/my.cnf.${operatingsystem}.{lsbdistcodename}",
-                "puppet://modules/mysql/config/my.cnf.${operatingsystem}",
-                "puppet://modules/mysql/config/my.cnf"
+                "puppet:///modules/site-mysql/my.cnf.${operatingsystem}.{lsbdistcodename}",
+                "puppet:///modules/site-mysql/my.cnf.${operatingsystem}",
+                "puppet:///modules/site-mysql/my.cnf",
+                "puppet:///modules/mysql/config/my.cnf.${operatingsystem}.{lsbdistcodename}",
+                "puppet:///modules/mysql/config/my.cnf.${operatingsystem}",
+                "puppet:///modules/mysql/config/my.cnf"
             ],
             ensure => file,
             require => Package['mysql-server'],

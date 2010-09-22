@@ -6,7 +6,10 @@ class mysql::server::base {
             path => '/etc/mysql/my.cnf',
             source => [
                 "puppet://$server/modules/site-mysql/${fqdn}/my.cnf",
+                "puppet://$server/modules/site-mysql/my.cnf.${operatingsystem}.{lsbdistcodename}",
+                "puppet://$server/modules/site-mysql/my.cnf.${operatingsystem}",
                 "puppet://$server/modules/site-mysql/my.cnf",
+                "puppet://$server/modules/mysql/config/my.cnf.${operatingsystem}.{lsbdistcodename}",
                 "puppet://$server/modules/mysql/config/my.cnf.${operatingsystem}",
                 "puppet://$server/modules/mysql/config/my.cnf"
             ],

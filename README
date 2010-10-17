@@ -1,0 +1,102 @@
+Introduction/Notes
+==================
+
+This module manages your mysql resources. 
+
+Requirements
+------------
+
+If you are wanting munin integration, you will need the munin module installed.
+
+If you are wanting shorewall integration, you will need the shorewall module
+installed.
+
+If you are wanting nagios integration, you will need the nagios module
+installed, specifically it must have nagios::plugin::deploy functionality. 
+
+You will need to have activated storedconfigs on the puppetmaster.
+
+Mysql Server
+============
+
+On a node where you wish to have a mysql server installed, you should first
+define the mysql root password and then include mysql::server, for example:
+
+node foo {
+  $mysql_rootpw = "b00changem3"
+  include mysql::server
+}
+
+This will manage the necessary directories and configuration files, it will
+install the mysql client program and set the root password as you designated,
+along with setting a /root/.my.cnf for various module operations. It will also
+make sure the mysql service is running, and setup all the databases, users and
+grant tables.
+
+The my.cnf file will installed from one of many possible places, see
+manifests/server/base.pp for possible locations for managing this.
+
+Backups
+-------
+
+If you wish to automatically setup a cronjob to backup your databases, you can
+set the "$mysql_backup_cron = true" variable. This will setup a cronjob to do a
+mysqldump at 1am of all the databases on the system and put them in
+/var/backups/mysql by default. You can override this location by specifying
+$mysql_backup_dir.
+
+Optimizing tables
+-----------------
+
+If you wish mysql to periodically optimize tables, set the
+"$mysql_optimize_cron = true" variable before you include mysql::server.
+
+Munin
+-----
+
+If you wish to use munin you need to set the variables: $munin_mysql_password
+and "$use_munin = true", before you include mysql::server. This will be used to
+setup a mysql user for munin, with reduced privileges to allow for the various
+munin graphs to be setup and queried. The munin graphs are: mysql_bytes,
+mysql_queries, mysql_slowqueries and mysql_threads. NOTE: The
+$munin_mysql_password is not necessary on Debian systems as it will handled with
+Debian's /etc/mysql/debian.cnf.
+
+Nagios
+------
+
+If you wish nagios to check mysql, you should set the variable "$use_nagios =
+true" along with the "$nagios_check_mysql = true" variable. You will also need
+to set a password for the nagios mysql user which will be automatically created
+for you with reduced privileges used only for nagios checks. You can do that by
+setting the variable: $nagios_mysql_password = "f00changem3". These should be
+set before you include mysql::server.
+
+Unless you specify otherwise, the default nagios check which will be performed
+is the basic 'check_mysql' nagios plugin which simply tests connectivity to a
+MySQL server. You can specify more advanced mysql health checks as follows:
+
+mysql::server::nagios::check_health { [ 'connection-time', 'uptime', 'threads-connected', 
+				        'slave-lag', 'slave-io-running', 'slave-sql-running' ]:  }
+
+See the files/nagios/check_mysql_health script for the various mysql health
+checks that you can perform. Additionally, see the define "check_health" in
+manifests/server/nagios.pp for various options that you can pass to check_health. 
+
+Firewall
+--------
+
+If you wish to have firewall rules setup automatically for you, using shorewall,
+you will need to set: $use_shorewall = true. See the shorewall module for more
+information about how this works.
+
+
+Client
+======
+
+On a node where you wish to have the mysql client managed, you can 'include
+mysql::client' in the node definition. This will install the appropriate
+package.
+
+You can also 'include mysql::client::ruby' if you want the 'libmysql-ruby'
+libraries installed.

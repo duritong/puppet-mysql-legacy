@@ -659,6 +659,14 @@ sub init {
     $self->{pct_tmp_on_disk_now} = $self->{delta_created_tmp_tables} > 0 ?
         100 * $self->{delta_created_tmp_disk_tables} / $self->{delta_created_tmp_tables} :
         100;
+  } elsif ($params{mode} =~ /server::instance::openfiles/) {
+    ($dummy, $self->{open_files_limit}) = $self->{handle}->fetchrow_array(q{
+        SHOW VARIABLES LIKE 'open_files_limit'
+    });
+    ($dummy, $self->{open_files}) = $self->{handle}->fetchrow_array(q{
+        SHOW /*!50000 global */ STATUS LIKE 'Open_files'
+    });
+    $self->{pct_open_files} = 100 * $self->{open_files} / $self->{open_files_limit};
   } elsif ($params{mode} =~ /server::instance::myisam/) {
     $self->{engine_myisam} = DBD::MySQL::Server::Instance::MyISAM->new(
         %params
@@ -796,6 +804,20 @@ sub nagios {
           $self->{warningrange}, $self->{criticalrange});
       $self->add_perfdata(sprintf "pct_tmp_table_on_disk_now=%.2f%%",
           $self->{pct_tmp_on_disk_now});
+    } elsif ($params{mode} =~ /server::instance::openfiles/) {
+      $self->add_nagios(
+          $self->check_thresholds($self->{pct_open_files}, 80, 95),
+          sprintf "%.2f%% of the open files limit reached (%d of max. %d)",
+              $self->{pct_open_files},
+              $self->{open_files}, $self->{open_files_limit});
+      $self->add_perfdata(sprintf "pct_open_files=%.3f%%;%.3f;%.3f",
+          $self->{pct_open_files},
+          $self->{warningrange},
+          $self->{criticalrange});
+      $self->add_perfdata(sprintf "open_files=%d;%d;%d",
+          $self->{open_files},
+          $self->{open_files_limit} * $self->{warningrange} / 100,
+          $self->{open_files_limit} * $self->{criticalrange} / 100);
     } elsif ($params{mode} =~ /server::instance::myisam/) {
       $self->{engine_myisam}->nagios(%params);
       $self->merge_nagios($self->{engine_myisam});
@@ -2733,6 +2755,109 @@ sub init {
 }
 
 
+package Extraopts;
+
+use strict;
+use File::Basename;
+use Data::Dumper;
+
+sub new {
+  my $class = shift;
+  my %params = @_;
+  my $self = {
+    file => $params{file},
+    commandline => $params{commandline},
+    config => {},
+    section => 'default_no_section',
+  };
+  bless $self, $class;
+  $self->prepare_file_and_section();
+  $self->init();
+  return $self;
+}
+
+sub prepare_file_and_section {
+  my $self = shift;
+  if (! defined $self->{file}) {
+    # ./check_stuff --extra-opts
+    $self->{section} = basename($0);
+    $self->{file} = $self->get_default_file();
+  } elsif ($self->{file} =~ /^[^@]+$/) {
+    # ./check_stuff --extra-opts=special_opts
+    $self->{section} = $self->{file};
+    $self->{file} = $self->get_default_file();
+  } elsif ($self->{file} =~ /^@(.*)/) {
+    # ./check_stuff --extra-opts=@/etc/myconfig.ini
+    $self->{section} = basename($0);
+    $self->{file} = $1;
+  } elsif ($self->{file} =~ /^(.*?)@(.*)/) {
+    # ./check_stuff --extra-opts=special_opts@/etc/myconfig.ini
+    $self->{section} = $1;
+    $self->{file} = $2;
+  }
+}
+
+sub get_default_file {
+  my $self = shift;
+  foreach my $default (qw(/etc/nagios/plugins.ini
+      /usr/local/nagios/etc/plugins.ini
+      /usr/local/etc/nagios/plugins.ini
+      /etc/opt/nagios/plugins.ini
+      /etc/nagios-plugins.ini
+      /usr/local/etc/nagios-plugins.ini
+      /etc/opt/nagios-plugins.ini)) {
+    if (-f $default) {
+      return $default;
+    }
+  }
+  return undef;
+}
+
+sub init {
+  my $self = shift;
+  if (! defined $self->{file}) {
+    $self->{errors} = sprintf 'no extra-opts file specified and no default file found';
+  } elsif (! -f $self->{file}) {
+    $self->{errors} = sprintf 'could not open %s', $self->{file};
+  } else {
+    my $data = do { local (@ARGV, $/) = $self->{file}; <> };
+    my $in_section = 'default_no_section';
+    foreach my $line (split(/\n/, $data)) {
+      if ($line =~ /\[(.*)\]/) {
+        $in_section = $1;
+      } elsif ($line =~ /(.*)=(.*)/) {
+        $self->{config}->{$in_section}->{$1} = $2;
+      }
+    }
+  }
+}
+
+sub is_valid {
+  my $self = shift;
+  return ! exists $self->{errors};
+}
+
+sub overwrite {
+  my $self = shift;
+  my %commandline = ();
+  if (scalar(keys %{$self->{config}->{default_no_section}}) > 0) {
+    foreach (keys %{$self->{config}->{default_no_section}}) {
+      $commandline{$_} = $self->{config}->{default_no_section}->{$_};
+    }
+  }
+  if (exists $self->{config}->{$self->{section}}) {
+    foreach (keys %{$self->{config}->{$self->{section}}}) {
+      $commandline{$_} = $self->{config}->{$self->{section}}->{$_};
+    }
+  }
+  foreach (keys %commandline) {
+    if (! exists $self->{commandline}->{$_}) {
+      $self->{commandline}->{$_} = $commandline{$_};
+    }
+  }
+}
+
+
 
 package main;
 
@@ -2746,10 +2871,10 @@ use lib dirname($0);
 use vars qw ($PROGNAME $REVISION $CONTACT $TIMEOUT $STATEFILESDIR $needs_restart %commandline);
 
 $PROGNAME = "check_mysql_health";
-$REVISION = '$Revision: 2.1.2 $';
+$REVISION = '$Revision: 2.1.3 $';
 $CONTACT = 'gerhard.lausser@consol.de';
 $TIMEOUT = 60;
-$STATEFILESDIR = '/var/tmp/check_mysql_health';
+$STATEFILESDIR = '/var/run';
 $needs_restart = 0;
 
 my @modes = (
@@ -2804,6 +2929,9 @@ my @modes = (
   ['server::instance::tabletmpondisk',
       'tmp-disk-tables', undef,
       'Percent of temp tables created on disk' ],
+  ['server::instance::openfiles',
+      'open-files', undef,
+      'Percent of opened files' ],
   ['server::instance::slowqueries',
       'slow-queries', undef,
       'Slow queries' ],
@@ -2958,11 +3086,25 @@ my @params = (
     "encode",
     "units=s",
     "lookback=i",
-    "3");
+    "3",
+    "with-mymodules-dyn-dir=s",
+    "extra-opts:s");
 
 if (! GetOptions(\%commandline, @params)) {
   print_help();
   exit $ERRORS{UNKNOWN};
+}
+
+if (exists $commandline{'extra-opts'}) {
+  # read the extra file and overwrite other parameters
+  my $extras = Extraopts->new(file => $commandline{'extra-opts'}, commandline =>
+ \%commandline);
+  if (! $extras->is_valid()) {
+    printf "extra-opts are not valid: %s\n", $extras->{errors};
+    exit $ERRORS{UNKNOWN};
+  } else {
+    $extras->overwrite();
+  }
 }
 
 if (exists $commandline{version}) {
@@ -3009,7 +3151,12 @@ if (exists $commandline{method}) {
   $commandline{method} = "dbi";
 }
 
-$DBD::MySQL::Server::my_modules_dyn_dir = '/usr/local/nagios/libexec';
+if (exists $commandline{'with-mymodules-dyn-dir'}) {
+  $DBD::MYSQL::Server::my_modules_dyn_dir = $commandline{'with-mymodules-dyn-dir
+'};
+} else {
+  $DBD::MYSQL::Server::my_modules_dyn_dir = '/usr/local/nagios/libexec';
+}
 
 if (exists $commandline{environment}) {
   # if the desired environment variable values are different from

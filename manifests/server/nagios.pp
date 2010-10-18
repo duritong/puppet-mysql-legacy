@@ -45,7 +45,7 @@ class mysql::server::nagios {
 
   define check_health (
     $ensure = present,
-    $check_hostname = $fqdn,
+    $check_hostname = '127.0.0.1',
     $check_port = '3306',
     $check_username = 'nagios',
     $check_password = $nagios_mysql_password,

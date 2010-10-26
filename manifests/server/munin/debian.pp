@@ -8,7 +8,7 @@ class mysql::server::munin::debian inherits mysql::server::munin::base {
         
         [ mysql_connections, mysql_qcache, mysql_cache_mem, mysql_size_all ]:
           config => "user root\nenv.mysqlopts --defaults-file=/etc/mysql/debian.cnf",
-          script_path_in => "/usr/local/share/munin-plugins";
+          script_path_in => "/usr/local/share/munin-plugins",
           require => Package['mysql'];
   }
 }

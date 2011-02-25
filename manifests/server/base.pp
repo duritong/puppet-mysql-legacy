@@ -76,6 +76,8 @@ class mysql::server::base {
         require => Package['mysql-server'],
    }
 
+   include mysql::server::account_security
+
     # Collect all databases and users
     Mysql_database<<| tag == "mysql_${fqdn}" |>>
     Mysql_user<<| tag == "mysql_${fqdn}"  |>>

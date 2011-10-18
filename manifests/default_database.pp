@@ -1,6 +1,4 @@
 # create default database
-# generate hashed password with:
-# ruby -r'digest/sha1' -e 'puts "*" + Digest::SHA1.hexdigest(Digest::SHA1.digest(ARGV[0])).upcase' PASSWORD
 define mysql::default_database(
   $username = 'absent',
   $password = 'absent',
@@ -32,9 +30,12 @@ define mysql::default_database(
     ]
     if $ensure == 'present' {
       Mysql_user["${real_username}@${host}"]{
-        password_hash => $password_is_encrypted ? {
-          true => "$password",
-          default => mysql_password("$password")
+        password_hash => $password ? {
+        'trocla' => trocla("mysql_${real_username}",'mysql'),
+        default => $password_is_encrypted ? {
+            true => "$password",
+            default => mysql_password("$password")
+          },
         },
       }
     }

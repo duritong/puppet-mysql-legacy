@@ -20,6 +20,12 @@ MYSQL_DB_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
   :show_view_priv, :create_routine_priv, :alter_routine_priv, :execute_priv
 ]
 
+MYSQL_TABLE_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv, 
+                      :create_priv, :drop_priv, :grant_privt, :references_priv, 
+                      :index_priv, :alter_priv, :create_view_priv, :show_view_priv, 
+                      :trigger_priv
+]
+
 Puppet::Type.type(:mysql_grant).provide(:mysql) do
 
   desc "Uses mysql as database."
@@ -33,7 +39,7 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
 
   # this parses the
   def split_name(string)
-    matches = /^([^@]*)@([^\/]*)(\/(.*))?$/.match(string).captures.compact
+    matches = /^([^@]*)@([^\/]*)(\/(.*))?(\/(.*))?$/.match(string).captures.compact
     case matches.length 
       when 2
         {
@@ -47,6 +53,14 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
           :user => matches[0],
           :host => matches[1],
           :db => matches[3]
+        }
+      when 6
+        {
+          :type => :table,
+          :user => matches[0],
+          :host => matches[1],
+          :db => matches[3],
+          :table => matches[5]
         }
     end
   end
@@ -63,6 +77,10 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
         mysql "mysql", "-e", "INSERT INTO db (host, user, db) VALUES ('%s', '%s', '%s')" % [
           name[:host], name[:user], name[:db],
         ]
+      when :table
+        mysql "mysql", "-e", "INSERT INTO tables_priv (host, user, db, table) VALUES ('%s', '%s', '%s', '%s')" % [
+          name[:host], name[:user], name[:db], name[:table],
+        ]
       end
       mysql_flush
     end
@@ -78,6 +96,9 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
     if name[:type] == :db
       fields << :db
     end
+    if name[:type] == :table
+      fields << :table
+    end
     not mysql( "mysql", "-NBe", 'SELECT "1" FROM %s WHERE %s' % [ name[:type], fields.map do |f| "%s = '%s'" % [f, name[f]] end.join(' AND ')]).empty?
   end
 
@@ -87,6 +108,8 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
         MYSQL_USER_PRIVS
       when :db
         MYSQL_DB_PRIVS
+      when :table
+        MYSQL_TABLE_PRIVS
     end
     all_privs = all_privs.collect do |p| p.to_s end.sort.join("|")
     privs = privileges.collect do |p| p.to_s end.sort.join("|")
@@ -103,6 +126,8 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
       privs = mysql "mysql", "-Be", 'select * from user where user="%s" and host="%s"' % [ name[:user], name[:host] ]
     when :db
       privs = mysql "mysql", "-Be", 'select * from db where user="%s" and host="%s" and db="%s"' % [ name[:user], name[:host], name[:db] ]
+    when :table
+      privs = mysql "mysql", "-Be", 'select * from tables_priv where User="%s" and Host="%s" and Db="%s" and Table="%s"' % [ name[:user], name[:host], name[:db], name[:table] ]
     end
 
     if privs.match(/^$/) 
@@ -136,6 +161,10 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
     when :db
       stmt = 'update db set '
       where = ' where user="%s" and host="%s"' % [ name[:user], name[:host] ]
+      all_privs = MYSQL_DB_PRIVS
+    when :table
+      stmt = 'update table_priv set '
+      where = ' where user="%s" and host="%s" and Db="%s"' % [ name[:user], name[:host], name[:db] ]
       all_privs = MYSQL_DB_PRIVS
     end
 

@@ -5,6 +5,16 @@ Puppet::Type.newtype(:mysql_grant) do
   #ensurable
   autorequire(:service) { 'mysqld' }
 
+  autorequire :mysql_table do
+    reqs = []
+    matches = self[:name].match(/^([^@]*)@([^\/]*)\/(.+)\/(.+)$/)
+    unless matches.nil?
+      reqs << matches[4]
+    end
+    # puts "Autoreq: '%s'" % reqs.join(" ")
+    reqs
+  end
+
   autorequire :mysql_db do
     # puts "Starting db autoreq for %s" % self[:name]
     reqs = []

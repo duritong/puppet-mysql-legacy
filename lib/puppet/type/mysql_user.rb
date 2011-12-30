@@ -1,7 +1,10 @@
 # This has to be a separate type to enable collecting
 Puppet::Type.newtype(:mysql_user) do
   @doc = "Manage a database user."
+
   ensurable
+  autorequire(:service) { 'mysqld' }
+
   newparam(:name) do
     desc "The name of the user. This uses the 'username@hostname' form."
 

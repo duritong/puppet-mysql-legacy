@@ -1,9 +1,5 @@
 class mysql::server {
 
-    include common::moduledir
-    $mysql_moduledir = "${common::moduledir::module_dir_path}/mysql"
-    module_dir { ['mysql', 'mysql/server']: }
-    
     case $operatingsystem {
       gentoo: { include mysql::server::gentoo }
       centos: { include mysql::server::centos }
@@ -19,7 +15,10 @@ class mysql::server {
     }
 
     if $use_nagios {
-      include mysql::server::nagios
+      case $nagios_check_mysql {
+        false: { info("We don't do nagioschecks for mysql on ${fqdn}" ) }
+        default: { include mysql::server::nagios }
+      }
     }
 
     if $use_shorewall {

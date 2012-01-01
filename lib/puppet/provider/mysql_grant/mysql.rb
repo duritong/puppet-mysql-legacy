@@ -57,11 +57,11 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
         }
       when 6
         {
-          :type => :table,
+          :type => :tables_priv,
           :user => matches[0],
           :host => matches[1],
           :db => matches[3],
-          :table => matches[5]
+          :table_name => matches[5]
         }
       when 8
         {
@@ -125,7 +125,7 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
         MYSQL_USER_PRIVS
       when :db
         MYSQL_DB_PRIVS
-      when :table
+      when :tables_priv
         MYSQL_TABLE_PRIVS
       when :column
         MYSQL_COLUMN_PRIVS

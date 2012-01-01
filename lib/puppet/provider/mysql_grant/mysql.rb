@@ -183,10 +183,21 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
       stmt = 'update db set '
       where = ' where user="%s" and host="%s"' % [ name[:user], name[:host] ]
       all_privs = MYSQL_DB_PRIVS
-    when :table
-      stmt = 'update table_priv set '
-      where = ' where user="%s" and host="%s" and Db="%s"' % [ name[:user], name[:host], name[:db] ]
-      all_privs = MYSQL_DB_PRIVS    
+    when :tables_priv
+      currently_set = privileges
+      currently_set = currently_set.scan(/\w+/)
+      privs.map! {|i| i.to_s.downcase}
+      revoke = currently_set - privs
+
+      if !revoke.empty?
+         #puts "Revoking table privs: ", revoke
+         mysql "mysql", "-e", "REVOKE %s ON %s.%s FROM '%s'@'%s'" % [ revoke.join(", "), name[:db], name[:table_name], name[:user], name[:host] ]
+      end
+
+      set = privs - currently_set
+      stmt = 'GRANT '
+      where = ' ON %s.%s TO "%s"@"%s"' % [ name[:db], name[:table_name], name[:user], name[:host] ]
+      all_privs = MYSQL_TABLE_PRIVS    
     when :column
       stmt = 'update columns_priv set '
       where = ' where user="%s" and host="%s" and Db="%s" and Table="%s"' % [ name[:user], name[:host], name[:db], name[:table] ]
@@ -197,13 +208,23 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
       privs = all_privs
     end
   
-    # puts "stmt:", stmt
-    set = all_privs.collect do |p| "%s = '%s'" % [p, privs.include?(p) ? 'Y' : 'N'] end.join(', ')
-    # puts "set:", set
+    #puts "stmt:", stmt
+    case name[:type]
+    when :user
+      set = all_privs.collect do |p| "%s = '%s'" % [p, privs.include?(p) ? 'Y' : 'N'] end.join(', ')
+    when :db
+      set = all_privs.collect do |p| "%s = '%s'" % [p, privs.include?(p) ? 'Y' : 'N'] end.join(', ')
+    when :tables_priv
+      set = set.join(', ')
+    end
+
+    #puts "set:", set
     stmt = stmt << set << where
 
-    mysql "mysql", "-Be", stmt
-    mysql_flush
+    if !set.empty?
+      mysql "mysql", "-Be", stmt
+      mysql_flush
+    end
   end
 end
 

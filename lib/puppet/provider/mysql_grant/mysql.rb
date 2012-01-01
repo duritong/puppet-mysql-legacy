@@ -20,10 +20,8 @@ MYSQL_DB_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
   :show_view_priv, :create_routine_priv, :alter_routine_priv, :execute_priv
 ]
 
-MYSQL_TABLE_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv, 
-                      :create_priv, :drop_priv, :grant_privt, :references_priv, 
-                      :index_priv, :alter_priv, :create_view_priv, :show_view_priv, 
-                      :trigger_priv
+MYSQL_TABLE_PRIVS = [ :select, :insert, :update, :delete, :create, :drop, 
+		      :references, :index, :alter
 ]
 
 MYSQL_COLUMN_PRIVS = [ :select_priv, :insert_priv, :update_priv, :references_priv ]

@@ -87,10 +87,6 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
         mysql "mysql", "-e", "INSERT INTO db (host, user, db) VALUES ('%s', '%s', '%s')" % [
           name[:host], name[:user], name[:db],
         ]
-      when :table
-        mysql "mysql", "-e", "INSERT INTO tables_priv (host, user, db, table) VALUES ('%s', '%s', '%s', '%s')" % [
-          name[:host], name[:user], name[:db], name[:table],
-        ]
       when :column
         mysql "mysql", "-e", "INSERT INTO columns_priv (host, user, db, table, column_name) VALUES ('%s', '%s', '%s', '%s', '%s')" % [
           name[:host], name[:user], name[:db], name[:table], name[:column],
@@ -110,12 +106,8 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
     if name[:type] == :db
       fields << :db
     end
-    if name[:type] == :table
-      fields << :table
-    end
     if name[:type] == :column
       fields << :column
-    end
     not mysql( "mysql", "-NBe", 'SELECT "1" FROM %s WHERE %s' % [ name[:type], fields.map do |f| "%s = '%s'" % [f, name[f]] end.join(' AND ')]).empty?
   end
 
@@ -145,28 +137,36 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
       privs = mysql "mysql", "-Be", 'select * from user where user="%s" and host="%s"' % [ name[:user], name[:host] ]
     when :db
       privs = mysql "mysql", "-Be", 'select * from db where user="%s" and host="%s" and db="%s"' % [ name[:user], name[:host], name[:db] ]
-    when :table
-      privs = mysql "mysql", "-Be", 'select * from tables_priv where User="%s" and Host="%s" and Db="%s" and Table="%s"' % [ name[:user], name[:host], name[:db], name[:table] ]
-    when :column
+    when :tables_priv
+      privs = mysql "mysql", "-NBe", 'select Table_priv from tables_priv where User="%s" and Host="%s" and Db="%s" and Table_name="%s"' % [ name[:user], name[:host], name[:db], name[:table_name] ]
+      privs = privs.chomp.downcase
+      return privs
+    when :columns
       privs = mysql "mysql", "-Be", 'select * from columns_priv where User="%s" and Host="%s" and Db="%s" and Table_name="%s" and Column_name="%s"' % [ name[:user], name[:host], name[:db], name[:table], name[:column] ]
     end
 
     if privs.match(/^$/) 
       privs = [] # no result, no privs
     else
+      case name[:type]
+      when :user, :db
       # returns a line with field names and a line with values, each tab-separated
-      privs = privs.split(/\n/).map! do |l| l.chomp.split(/\t/) end
-      # transpose the lines, so we have key/value pairs
-      privs = privs[0].zip(privs[1])
-      privs = privs.select do |p| p[0].match(/_priv$/) and p[1] == 'Y' end
+        privs = privs.split(/\n/).map! do |l| l.chomp.split(/\t/) end
+        # transpose the lines, so we have key/value pairs
+        privs = privs[0].zip(privs[1])
+        privs = privs.select do |p| (/_priv$/) and p[1] == 'Y' end
+        privs.collect do |p| symbolize(p[0].downcase) end
+      end
     end
-
-    privs.collect do |p| symbolize(p[0].downcase) end
   end
 
   def privileges=(privs) 
-    unless row_exists?
-      create_row
+    name = split_name(@resource[:name])
+    # don't need to create a row for tables_priv and columns_priv
+    if name[:type] == :user || name[:type] == :db
+      unless row_exists?
+        create_row
+      end
     end
 
     # puts "Setting privs: ", privs.join(", ")

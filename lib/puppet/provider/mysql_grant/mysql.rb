@@ -39,7 +39,8 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
 
   # this parses the
   def split_name(string)
-    matches = /^([^@]*)@([^\/]*)(\/(.*))?(\/(.*))?(\/(.*))?$/.match(string).captures.compact
+    matches = /^([^@]*)@([^\/]*)(\/([^\/]*))?(\/([^\/]*))?$/.match(string).captures.compact
+
     case matches.length 
       when 2
         {

@@ -108,6 +108,7 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
     end
     if name[:type] == :column
       fields << :column
+    end
     not mysql( "mysql", "-NBe", 'SELECT "1" FROM %s WHERE %s' % [ name[:type], fields.map do |f| "%s = '%s'" % [f, name[f]] end.join(' AND ')]).empty?
   end
 
@@ -200,8 +201,8 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
       all_privs = MYSQL_TABLE_PRIVS    
     when :column
       stmt = 'update columns_priv set '
-      where = ' where user="%s" and host="%s" and Db="%s" and Table="%s"' % [ name[:user], name[:host], name[:db], name[:table] ]
-      all_privs = MYSQL_DB_PRIVS    
+      where = ' where user="%s" and host="%s" and Db="%s" and Table_name="%s"' % [ name[:user], name[:host], name[:db], name[:table_name] ]
+      all_privs = MYSQL_COLUMN_PRIVS    
     end
 
     if privs[0] == :all 
@@ -220,6 +221,7 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
 
     #puts "set:", set
     stmt = stmt << set << where
+    #puts "stmt:", stmt
 
     if !set.empty?
       mysql "mysql", "-Be", stmt

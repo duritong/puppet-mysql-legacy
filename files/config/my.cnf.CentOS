@@ -47,6 +47,8 @@ thread_cache_size = 4
 # set it too high.
 innodb_buffer_pool_size = 50MB
 
+innodb_file_per_table
+
 query_cache_limit=5M
 
 [mysql.server]

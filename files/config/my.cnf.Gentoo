@@ -124,6 +124,8 @@ set-variable = innodb_log_files_in_group=2
 innodb_flush_log_at_trx_commit = 1
 innodb_lock_wait_timeout = 50
 
+innodb_file_per_table
+
 [mysqldump]
 quick
 max_allowed_packet 			= 16M

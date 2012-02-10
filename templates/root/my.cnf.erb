@@ -1,4 +1,4 @@
 [client]
 user=root
 host=localhost
-password=<%= mysql_rootpw %>
+password=<%= scope.function_trocla("mysql_rootpw_#{scope.lookupvar('::fqdn')}",'plain', 'length' => 32) %>

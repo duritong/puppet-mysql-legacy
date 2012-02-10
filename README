@@ -19,16 +19,15 @@ You will need to have activated storedconfigs on the puppetmaster.
 Mysql Server
 ============
 
-On a node where you wish to have a mysql server installed, you should first
-define the mysql root password and then include mysql::server, for example:
+On a node where you wish to have a mysql server installed, you should include
+mysql::server, for example:
 
 node foo {
-  $mysql_rootpw = "b00changem3"
   include mysql::server
 }
 
 This will manage the necessary directories and configuration files, it will
-install the mysql client program and set the root password as you designated,
+install the mysql client program and set the root password taken from trocla,
 along with setting a /root/.my.cnf for various module operations. It will also
 make sure the mysql service is running, and setup all the databases, users and
 grant tables.
@@ -54,22 +53,21 @@ If you wish mysql to periodically optimize tables, set the
 Munin
 -----
 
-If you wish to use munin you need to set the variables: $munin_mysql_password
-and "$use_munin = true", before you include mysql::server. This will be used to
+If you wish to use munin you need to set the variables use_munin to "true" in
+hiera, before you include mysql::server. This will be used to
 setup a mysql user for munin, with reduced privileges to allow for the various
 munin graphs to be setup and queried. The munin graphs are: mysql_bytes,
 mysql_queries, mysql_slowqueries and mysql_threads. NOTE: The
-$munin_mysql_password is not necessary on Debian systems as it will handled with
-Debian's /etc/mysql/debian.cnf.
+munin_mysql_password will be taken from trocla, but it is not necessary on
+Debian systems as it will handled with Debian's /etc/mysql/debian.cnf.
 
 Nagios
 ------
 
-If you wish nagios to check mysql, you should set the variable "$use_nagios =
-true" along with the "$nagios_check_mysql = true" variable. You will also need
-to set a password for the nagios mysql user which will be automatically created
-for you with reduced privileges used only for nagios checks. You can do that by
-setting the variable: $nagios_mysql_password = "f00changem3". These should be
+If you wish nagios to check mysql, you should set the variable "use_nagios" to 
+"true" in hiera along with the "nagios_check_mysql" variable to "true". A 
+password for the nagios mysql user which will be automatically created via trocla
+for you with reduced privileges used only for nagios checks. These should be
 set before you include mysql::server.
 
 Unless you specify otherwise, the default nagios check which will be performed
@@ -87,8 +85,8 @@ Firewall
 --------
 
 If you wish to have firewall rules setup automatically for you, using shorewall,
-you will need to set: $use_shorewall = true. See the shorewall module for more
-information about how this works.
+you will need to set the hiera variable "use_shorewall" to "true". See the
+shorewall module for more information about how this works.
 
 
 Client

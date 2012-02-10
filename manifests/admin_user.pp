@@ -1,5 +1,3 @@
-# generate hashed password with:
-# ruby -r'digest/sha1' -e 'puts "*" + Digest::SHA1.hexdigest(Digest::SHA1.digest(ARGV[0])).upcase' PASSWORD
 define mysql::admin_user(
   $ensure = present,
   $host = '127.0.0.1',

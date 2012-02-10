@@ -1,27 +1,27 @@
 class mysql::server {
 
-    case $operatingsystem {
+    case $::operatingsystem {
       gentoo: { include mysql::server::gentoo }
       centos: { include mysql::server::centos }
       debian: { include mysql::server::debian }
       default: { include mysql::server::base }
     }
-    
-    if $use_munin {
-      case $operatingsystem {
+
+    if hiera('use_munin',false) {
+      case $::operatingsystem {
         debian: { include mysql::server::munin::debian }
         default: { include mysql::server::munin::default }
       }
     }
 
-    if $use_nagios {
-      case $nagios_check_mysql {
-        false: { info("We don't do nagioschecks for mysql on ${fqdn}" ) }
+    if hiera('use_nagios',false) {
+      case hiera('nagios_check_mysql',false) {
+        false: { info("We don't do nagioschecks for mysql on ${::fqdn}" ) }
         default: { include mysql::server::nagios }
       }
     }
 
-    if $use_shorewall {
+    if hiera('use_shorewall',false) {
       include shorewall::rules::mysql
     }
 }

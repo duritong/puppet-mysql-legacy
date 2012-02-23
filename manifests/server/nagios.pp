@@ -10,7 +10,7 @@ class mysql::server::nagios {
   if ($nagios_mysql_notcp != true) {
     $nagios_mysql_user = 'nagios@%'
     nagios::service::mysql { 'connection-time':
-      check_hostname => $fqdn,
+      check_host => $fqdn,
       require => Mysql_grant[$nagios_mysql_user],
     }
   }

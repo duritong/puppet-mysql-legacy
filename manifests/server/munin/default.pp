@@ -25,4 +25,20 @@ class mysql::server::munin::default inherits mysql::server::munin::base {
         config => "env.mysqlopts --user=munin --password=${munin_mysql_password} -h localhost",
         require => [ Mysql_grant['munin@localhost'], Mysql_user['munin@localhost'], Package['mysql'] ];
     }
+
+    Munin::Plugin::Deploy {
+      config => "env.mysqlopts --user=munin --password=$munin_mysql_password -h localhost",
+      require =>
+      [ Mysql_grant['munin@localhost'],
+        Mysql_user['munin@localhost'],
+        Package['mysql'] ]
+    }
+    munin::plugin::deploy{
+      'mysql_connections':
+        source => 'mysql/munin/mysql_connections';
+      'mysql_qcache':
+        source => 'mysql/munin/mysql_qcache';
+      'mysql_qcache_mem':
+        source => 'mysql/munin/mysql_qcache_mem';
+    }
 }

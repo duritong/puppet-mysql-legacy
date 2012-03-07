@@ -1,5 +1,21 @@
 #!/usr/bin/perl
 #
+# Copyright (C) 2008 Rackspace US, Inc. <http://www.rackspace.com>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; version 2 dated June,
+# 1991.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see http://www.gnu.org/licenses/gpl.txt
+#
+#
 # This plugin is based off of the Connection Usage 
 # section of the MySQL Connection Health Page
 # 
@@ -83,7 +99,7 @@ sub poll_variables {
 sub print_graph_information {
 print <<EOM;
 graph_title MySQL Connections
-graph_args --base 1000 -l 0
+graph_args --base 1000 --lower-limit 0
 graph_vlabel Connections
 graph_info The number of current connections with respect to the max_connections setting.
 graph_category mysql
@@ -106,20 +122,20 @@ sub test_service {
     system ("$MYSQLADMIN --version >/dev/null 2>/dev/null");
     if ($? == 0)
     {
-	system ("$TEST_COMMAND >/dev/null 2>/dev/null");
-	if ($? == 0)
-	{
-	    print "yes\n";
-	    $return = 0;
-	}
-	else
-	{
-	    print "no (could not connect to mysql)\n";
-	}
+		system ("$TEST_COMMAND >/dev/null 2>/dev/null");
+		if ($? == 0)
+		{
+		    print "yes\n";
+		    $return = 0;
+		}
+		else
+		{
+	   		print "no (could not connect to mysql)\n";
+		}
     }
     else
     {
-	print "no (mysqladmin not found)\n";
+		print "no (mysqladmin not found)\n";
     }
     exit $return;
 }

@@ -13,12 +13,21 @@ MYSQL_USER_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
   :show_view_priv, :create_routine_priv, :alter_routine_priv,
   :create_user_priv, :trigger_priv
 ]
-
-MYSQL_DB_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
-  :create_priv, :drop_priv, :grant_priv, :references_priv, :index_priv,
-  :alter_priv, :create_tmp_table_priv, :lock_tables_priv, :create_view_priv,
-  :show_view_priv, :create_routine_priv, :alter_routine_priv, :execute_priv
-]
+mysql_version = Facter.value(:mysql_version)
+if mysql_version =~ /^5.1/ && mysql_version.split('.').last.to_i >= 6
+  MYSQL_DB_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
+    :create_priv, :drop_priv, :grant_priv, :references_priv, :index_priv,
+    :alter_priv, :create_tmp_table_priv, :lock_tables_priv, :create_view_priv,
+    :show_view_priv, :create_routine_priv, :alter_routine_priv, :execute_priv,
+    :event_priv, :trigger_priv
+  ]
+else
+  MYSQL_DB_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
+    :create_priv, :drop_priv, :grant_priv, :references_priv, :index_priv,
+    :alter_priv, :create_tmp_table_priv, :lock_tables_priv, :create_view_priv,
+    :show_view_priv, :create_routine_priv, :alter_routine_priv, :execute_priv,
+  ]
+end
 
 MYSQL_TABLE_PRIVS = [ :select, :insert, :update, :delete, :create, :drop, 
 		      :references, :index, :alter

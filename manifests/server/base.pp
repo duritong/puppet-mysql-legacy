@@ -1,4 +1,7 @@
-class mysql::server::base {
+class mysql::server::base(
+  $mysql_backup_cron = hiera('mysql_backup_cron', false),
+  $mysql_optimize_cron = hiera('mysql_optimize_cron', false)
+) {
     package { mysql-server:
         ensure => present,
     }
@@ -57,12 +60,12 @@ class mysql::server::base {
         refreshonly => true,
     }
 
-    if hiera('mysql_backup_cron',false) {
-        include mysql::server::cron::backup
+    if ($mysql_backup_cron) {
+      include mysql::server::cron::backup
     }
 
-    if hiera('mysql_optimize_cron',false) {
-        include mysql::server::cron::optimize
+    if $mysql_optimize_cron) {
+      include mysql::server::cron::optimize
     }
 
     service { 'mysql':

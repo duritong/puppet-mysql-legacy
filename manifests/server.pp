@@ -1,5 +1,6 @@
 class mysql::server (
-  $use_munin = hiera('use_nagios',false),
+  $use_munin = hiera('use_munin',false),
+  $use_nagios = hiera('use_nagios',false),
   $use_shorewall = hiera('use_shorewall',false)
 ) {
    case $::operatingsystem {

@@ -60,11 +60,11 @@ class mysql::server::base(
         refreshonly => true,
     }
 
-    if ($mysql_backup_cron) {
+    if $mysql_backup_cron {
       include mysql::server::cron::backup
     }
 
-    if $mysql_optimize_cron) {
+    if $mysql_optimize_cron {
       include mysql::server::cron::optimize
     }
 

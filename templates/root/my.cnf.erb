@@ -1,4 +1,4 @@
 [client]
 user=root
 host=localhost
-password=<%= scope.function_trocla("mysql_root_#{scope.lookupvar('::fqdn')}",'plain', 'length' => 32) %>
+password=<%= Puppet::Parser::Functions.function('trocla');'' %><%= scope.function_trocla("mysql_root_#{scope.lookupvar('::fqdn')}",'plain', 'length' => 32) %>

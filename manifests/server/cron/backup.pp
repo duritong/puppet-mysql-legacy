@@ -4,7 +4,7 @@ class mysql::server::cron::backup {
       false: { info("We don't manage the mysql_backup_dir") }
       default: {
         file { 'mysql_backup_dir':
-          path => hiera('mysql_backup_dir','/var/backups/mysql'),
+          path => $mysql_backup_dir,
           ensure => directory,
           before => Cron['mysql_backup_cron'],
           owner => root, group => 0, mode => 0700;
@@ -13,7 +13,7 @@ class mysql::server::cron::backup {
     }
 
     cron { 'mysql_backup_cron':
-        command => "/usr/bin/mysqldump --default-character-set=utf8 --all-databases --create-options --flush-logs --lock-tables --single-transaction | gzip > ${real_mysql_backup_dir}/mysqldump.sql.gz && chmod 600 ${real_mysql_backup_dir}/mysqldump.sql.gz",
+        command => "/usr/bin/mysqldump --default-character-set=utf8 --all-databases --create-options --flush-logs --lock-tables --single-transaction | gzip > ${mysql_backup_dir}/mysqldump.sql.gz && chmod 600 ${mysql_backup_dir}/mysqldump.sql.gz",
         user => 'root',
         minute => 0,
         hour => 1,

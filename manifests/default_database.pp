@@ -11,21 +11,21 @@ define mysql::default_database(
     'absent' => $name,
     default => $username
   }
-  mysql_database{"$name":
+  mysql_database{$name:
     ensure => $ensure
   }
   if $password == 'absent' and $ensure != 'absent' {
       info("we don't create the user for database: ${name}")
-      $grant_require = Mysql_database["$name"]
+      $grant_require = Mysql_database[$name]
   } else {
     mysql_user{"${real_username}@${host}":
       ensure => $ensure,
       require => [
-        Mysql_database["$name"]
+        Mysql_database[$name]
       ],
     }
     $grant_require = [
-      Mysql_database["$name"],
+      Mysql_database[$name],
       Mysql_user["${real_username}@${host}"]
     ]
     if $ensure == 'present' {
@@ -33,7 +33,7 @@ define mysql::default_database(
         password_hash => $password ? {
         'trocla' => trocla("mysql_${real_username}",'mysql'),
         default => $password_is_encrypted ? {
-            true => "$password",
+            true => $password,
             default => mysql_password("$password")
           },
         },
@@ -42,7 +42,7 @@ define mysql::default_database(
   }
   if $ensure == 'present' {
     mysql_grant{"${real_username}@${host}/${name}":
-      privileges => "$privileges",
+      privileges => $privileges,
       require => $grant_require,
     }
   }

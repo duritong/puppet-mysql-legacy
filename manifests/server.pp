@@ -10,18 +10,18 @@ class mysql::server (
     default: { include mysql::server::base }
   }
 
-  if $mysql::manage_munin {
+  if $manage_munin {
     case $::operatingsystem {
       debian:  { include mysql::server::munin::debian }
       default: { include mysql::server::munin::default }
     }
   }
 
-  if $mysql::manage_nagios {
+  if $manage_nagios {
     include mysql::server::nagios
   } 
 
-  if $mysql::manage_shorewall {
+  if $manage_shorewall {
     include shorewall::rules::mysql
   }
 }

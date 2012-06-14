@@ -1,5 +1,7 @@
 class mysql::server::clientpackage inherits mysql::server::base {
-    include mysql::client
+    class { 'mysql::client':
+      manage_shorewall => $mysql::server::manage_shorewall
+    }
     File['mysql_setmysqlpass.sh']{
         require +> Package['mysql-client'],
     }

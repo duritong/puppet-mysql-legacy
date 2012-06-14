@@ -57,11 +57,11 @@ class mysql::server::base {
     refreshonly => true,
   }
 
-  if hiera('mysql_backup_cron',false) {
+  if $mysql::server::backup_cron {
     include mysql::server::cron::backup
   }
 
-  if hiera('mysql_optimize_cron',false) {
+  if $mysql::server::optimize_cron {
     include mysql::server::cron::optimize
   }
 

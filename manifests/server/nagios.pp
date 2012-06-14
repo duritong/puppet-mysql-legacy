@@ -1,15 +1,14 @@
 class mysql::server::nagios {
   # Flip this variable if you need to check MySQL through check_ssh or check_nrpe,
   # in that case you will have to manually define nagios::service::mysql
-  if (hiera('nagios_mysql_notcp',false) != true) {
+  if $mysql::server::nagios_notcp {
+    $nagios_mysql_user = 'nagios@localhost'
+  } else {
     $nagios_mysql_user = 'nagios@%'
     nagios::service::mysql { 'connection-time':
       check_hostname => $::fqdn,
       require => Mysql_grant[$nagios_mysql_user],
     }
-  }
-  else {
-    $nagios_mysql_user = 'nagios@localhost'
   }
 
   mysql_user{$nagios_mysql_user:

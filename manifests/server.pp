@@ -1,7 +1,10 @@
 class mysql::server (
   $manage_shorewall = false,
   $manage_munin     = false,
-  $manage_nagios    = false
+  $manage_nagios    = false,
+  $backup_cron      = false,
+  $optimize_cron    = false,
+  $nagios_notcp     = false
 ) {
   case $::operatingsystem {
     gentoo:  { include mysql::server::gentoo }

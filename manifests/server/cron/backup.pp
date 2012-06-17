@@ -1,7 +1,7 @@
 class mysql::server::cron::backup {
-  if $mysql::server::manage_backup_dir
+  if $mysql::server::manage_backup_dir {
     file { 'mysql_backup_dir':
-      path => $mysql::server::backup_dir
+      path => $mysql::server::backup_dir,
       ensure => directory,
       before => Cron['mysql_backup_cron'],
       owner => root, group => 0, mode => 0700;

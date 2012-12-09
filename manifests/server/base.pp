@@ -58,7 +58,7 @@ class mysql::server::base {
   exec { 'mysql_set_rootpw':
     command     => '/usr/local/sbin/setmysqlpass.sh',
     unless      => 'mysqladmin -uroot status > /dev/null',
-    require     => [ File['mysql_setmysqlpass.sh'], Package['mysql-server'] ],
+    require     => [ File['mysql_setmysqlpass.sh'], Service['mysql'] ],
     refreshonly => true,
   }
 

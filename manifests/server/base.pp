@@ -59,6 +59,8 @@ class mysql::server::base {
     command     => '/usr/local/sbin/setmysqlpass.sh',
     unless      => 'mysqladmin -uroot status > /dev/null',
     require     => [ File['mysql_setmysqlpass.sh'], Service['mysql'] ],
+    # this is for security so that we only change the password
+    # if the password file itself has changed
     refreshonly => true,
   }
 

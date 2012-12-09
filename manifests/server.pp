@@ -1,3 +1,4 @@
+# manage a mysql server
 class mysql::server (
   $manage_shorewall  = false,
   $manage_munin      = false,
@@ -15,16 +16,16 @@ class mysql::server (
     default: { include mysql::server::base }
   }
 
-  if $manage_munin {
+  if $manage_munin and $::mysql_exists == 'true' {
     case $::operatingsystem {
       debian:  { include mysql::server::munin::debian }
       default: { include mysql::server::munin::default }
     }
   }
 
-  if $manage_nagios {
+  if $manage_nagios and $::mysql_exists == 'true' {
     include mysql::server::nagios
-  } 
+  }
 
   if $manage_shorewall {
     include shorewall::rules::mysql

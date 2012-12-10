@@ -12,9 +12,12 @@ class mysql::server::munin::default {
 
   $munin_mysql_password = trocla("mysql_munin_${::fqdn}",'plain', 'length: 32')
   munin::plugin {
-    [mysql_bytes, mysql_queries, mysql_slowqueries, mysql_threads]:
+    [mysql_queries, mysql_slowqueries]:
       config  => "env.mysqlopts --user=munin --password='${munin_mysql_password}' -h localhost",
-      require => Mysql_grant['munin@localhost'],
+      require => Mysql_grant['munin@localhost'];
+    [mysql_bytes, mysql_threads]:
+      config  => "env.mysqlopts --user=munin --password=${munin_mysql_password} -h localhost",
+      require => Mysql_grant['munin@localhost'];
   }
 
   Munin::Plugin::Deploy{

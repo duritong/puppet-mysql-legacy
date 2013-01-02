@@ -5,15 +5,27 @@
 
 require 'puppet/provider/package'
 
-MYSQL_USER_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
-  :create_priv, :drop_priv, :reload_priv, :shutdown_priv, :process_priv,
-  :file_priv, :grant_priv, :references_priv, :index_priv, :alter_priv,
-  :show_db_priv, :super_priv, :create_tmp_table_priv, :lock_tables_priv,
-  :execute_priv, :repl_slave_priv, :repl_client_priv, :create_view_priv,
-  :show_view_priv, :create_routine_priv, :alter_routine_priv,
-  :create_user_priv, :trigger_priv
-]
 mysql_version = Facter.value(:mysql_version)
+if mysql_version =~ /^5.0/
+  MYSQL_USER_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
+    :create_priv, :drop_priv, :reload_priv, :shutdown_priv, :process_priv,
+    :file_priv, :grant_priv, :references_priv, :index_priv, :alter_priv,
+    :show_db_priv, :super_priv, :create_tmp_table_priv, :lock_tables_priv,
+    :execute_priv, :repl_slave_priv, :repl_client_priv, :create_view_priv,
+    :show_view_priv, :create_routine_priv, :alter_routine_priv,
+    :create_user_priv
+]
+else
+  MYSQL_USER_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
+    :create_priv, :drop_priv, :reload_priv, :shutdown_priv, :process_priv,
+    :file_priv, :grant_priv, :references_priv, :index_priv, :alter_priv,
+    :show_db_priv, :super_priv, :create_tmp_table_priv, :lock_tables_priv,
+    :execute_priv, :repl_slave_priv, :repl_client_priv, :create_view_priv,
+    :show_view_priv, :create_routine_priv, :alter_routine_priv,
+    :create_user_priv, :trigger_priv
+  ]
+end
+
 if mysql_version =~ /^5.1/ && mysql_version.split('.').last.to_i >= 6
   MYSQL_DB_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
     :create_priv, :drop_priv, :grant_priv, :references_priv, :index_priv,

@@ -32,6 +32,7 @@ class mysql::server (
   if $manage_nagios and $::mysql_exists == 'true' {
     if $nagios_password_hash == 'absent' {
       fail("need to set the nagios password hash")
+    }
     include mysql::server::nagios
   }
 

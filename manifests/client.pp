@@ -1,3 +1,4 @@
+# client package for mysql
 class mysql::client (
   $manage_shorewall = false
 ) {

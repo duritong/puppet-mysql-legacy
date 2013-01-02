@@ -11,7 +11,7 @@ MYSQL_USER_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
   :show_db_priv, :super_priv, :create_tmp_table_priv, :lock_tables_priv,
   :execute_priv, :repl_slave_priv, :repl_client_priv, :create_view_priv,
   :show_view_priv, :create_routine_priv, :alter_routine_priv,
-  :create_user_priv
+  :create_user_priv, :trigger_priv
 ]
 mysql_version = Facter.value(:mysql_version)
 if mysql_version =~ /^5.1/ && mysql_version.split('.').last.to_i >= 6
@@ -29,6 +29,12 @@ else
   ]
 end
 
+MYSQL_TABLE_PRIVS = [ :select, :insert, :update, :delete, :create, :drop, 
+		      :references, :index, :alter
+]
+
+MYSQL_COLUMN_PRIVS = [ :select_priv, :insert_priv, :update_priv, :references_priv ]
+
 Puppet::Type.type(:mysql_grant).provide(:mysql) do
 
   desc "Uses mysql as database."
@@ -42,7 +48,8 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
 
   # this parses the
   def split_name(string)
-    matches = /^([^@]*)@([^\/]*)(\/(.*))?$/.match(string).captures.compact
+    matches = /^([^@]*)@([^\/]*)(\/([^\/]*))?(\/([^\/]*))?$/.match(string).captures.compact
+
     case matches.length 
       when 2
         {
@@ -56,6 +63,23 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
           :user => matches[0],
           :host => matches[1],
           :db => matches[3]
+        }
+      when 6
+        {
+          :type => :tables_priv,
+          :user => matches[0],
+          :host => matches[1],
+          :db => matches[3],
+          :table_name => matches[5]
+        }
+      when 8
+        {
+          :type => :table,
+          :user => matches[0],
+          :host => matches[1],
+          :db => matches[3],
+          :table => matches[5],
+          :column => matches[7]
         }
     end
   end
@@ -72,6 +96,10 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
         mysql "mysql", "-e", "INSERT INTO db (host, user, db) VALUES ('%s', '%s', '%s')" % [
           name[:host], name[:user], name[:db],
         ]
+      when :column
+        mysql "mysql", "-e", "INSERT INTO columns_priv (host, user, db, table, column_name) VALUES ('%s', '%s', '%s', '%s', '%s')" % [
+          name[:host], name[:user], name[:db], name[:table], name[:column],
+        ]
       end
       mysql_flush
     end
@@ -87,6 +115,9 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
     if name[:type] == :db
       fields << :db
     end
+    if name[:type] == :column
+      fields << :column
+    end
     not mysql( "mysql", "-NBe", 'SELECT "1" FROM %s WHERE %s' % [ name[:type], fields.map do |f| "%s = '%s'" % [f, name[f]] end.join(' AND ')]).empty?
   end
 
@@ -96,6 +127,10 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
         MYSQL_USER_PRIVS
       when :db
         MYSQL_DB_PRIVS
+      when :tables_priv
+        MYSQL_TABLE_PRIVS
+      when :column
+        MYSQL_COLUMN_PRIVS
     end
     all_privs = all_privs.collect do |p| p.to_s end.sort.join("|")
     privs = privileges.collect do |p| p.to_s end.sort.join("|")
@@ -112,24 +147,36 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
       privs = mysql "mysql", "-Be", 'select * from user where user="%s" and host="%s"' % [ name[:user], name[:host] ]
     when :db
       privs = mysql "mysql", "-Be", 'select * from db where user="%s" and host="%s" and db="%s"' % [ name[:user], name[:host], name[:db] ]
+    when :tables_priv
+      privs = mysql "mysql", "-NBe", 'select Table_priv from tables_priv where User="%s" and Host="%s" and Db="%s" and Table_name="%s"' % [ name[:user], name[:host], name[:db], name[:table_name] ]
+      privs = privs.chomp.downcase
+      return privs
+    when :columns
+      privs = mysql "mysql", "-Be", 'select * from columns_priv where User="%s" and Host="%s" and Db="%s" and Table_name="%s" and Column_name="%s"' % [ name[:user], name[:host], name[:db], name[:table], name[:column] ]
     end
 
     if privs.match(/^$/) 
       privs = [] # no result, no privs
     else
+      case name[:type]
+      when :user, :db
       # returns a line with field names and a line with values, each tab-separated
-      privs = privs.split(/\n/).map! do |l| l.chomp.split(/\t/) end
-      # transpose the lines, so we have key/value pairs
-      privs = privs[0].zip(privs[1])
-      privs = privs.select do |p| p[0].match(/_priv$/) and p[1] == 'Y' end
+        privs = privs.split(/\n/).map! do |l| l.chomp.split(/\t/) end
+        # transpose the lines, so we have key/value pairs
+        privs = privs[0].zip(privs[1])
+        privs = privs.select do |p| (/_priv$/) and p[1] == 'Y' end
+        privs.collect do |p| symbolize(p[0].downcase) end
+      end
     end
-
-    privs.collect do |p| symbolize(p[0].downcase) end
   end
 
   def privileges=(privs) 
-    unless row_exists?
-      create_row
+    name = split_name(@resource[:name])
+    # don't need to create a row for tables_priv and columns_priv
+    if name[:type] == :user || name[:type] == :db
+      unless row_exists?
+        create_row
+      end
     end
 
     # puts "Setting privs: ", privs.join(", ")
@@ -146,19 +193,49 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
       stmt = 'update db set '
       where = ' where user="%s" and host="%s"' % [ name[:user], name[:host] ]
       all_privs = MYSQL_DB_PRIVS
+    when :tables_priv
+      currently_set = privileges
+      currently_set = currently_set.scan(/\w+/)
+      privs.map! {|i| i.to_s.downcase}
+      revoke = currently_set - privs
+
+      if !revoke.empty?
+         #puts "Revoking table privs: ", revoke
+         mysql "mysql", "-e", "REVOKE %s ON %s.%s FROM '%s'@'%s'" % [ revoke.join(", "), name[:db], name[:table_name], name[:user], name[:host] ]
+      end
+
+      set = privs - currently_set
+      stmt = 'GRANT '
+      where = ' ON %s.%s TO "%s"@"%s"' % [ name[:db], name[:table_name], name[:user], name[:host] ]
+      all_privs = MYSQL_TABLE_PRIVS    
+    when :column
+      stmt = 'update columns_priv set '
+      where = ' where user="%s" and host="%s" and Db="%s" and Table_name="%s"' % [ name[:user], name[:host], name[:db], name[:table_name] ]
+      all_privs = MYSQL_COLUMN_PRIVS    
     end
 
     if privs[0] == :all 
       privs = all_privs
     end
   
-    # puts "stmt:", stmt
-    set = all_privs.collect do |p| "%s = '%s'" % [p, privs.include?(p) ? 'Y' : 'N'] end.join(', ')
-    # puts "set:", set
-    stmt = stmt << set << where
+    #puts "stmt:", stmt
+    case name[:type]
+    when :user
+      set = all_privs.collect do |p| "%s = '%s'" % [p, privs.include?(p) ? 'Y' : 'N'] end.join(', ')
+    when :db
+      set = all_privs.collect do |p| "%s = '%s'" % [p, privs.include?(p) ? 'Y' : 'N'] end.join(', ')
+    when :tables_priv
+      set = set.join(', ')
+    end
 
-    mysql "mysql", "-Be", stmt
-    mysql_flush
+    #puts "set:", set
+    stmt = stmt << set << where
+    #puts "stmt:", stmt
+
+    if !set.empty?
+      mysql "mysql", "-Be", stmt
+      mysql_flush
+    end
   end
 end
 

@@ -32,11 +32,13 @@ On a node where you wish to have a mysql server installed, you should include
 mysql::server, for example:
 
 node foo {
-  include mysql::server
+  class{'mysql::server':
+    root_password => 'foo',
+  }
 }
 
 This will manage the necessary directories and configuration files, it will
-install the mysql client program and set the root password taken from trocla,
+install the mysql client program and set the root password to 'foo',
 along with setting a /root/.my.cnf for various module operations. It will also
 make sure the mysql service is running, and setup all the databases, users and
 grant tables.
@@ -67,17 +69,19 @@ hiera, before you include mysql::server. This will be used to
 setup a mysql user for munin, with reduced privileges to allow for the various
 munin graphs to be setup and queried. The munin graphs are: mysql_bytes,
 mysql_queries, mysql_slowqueries and mysql_threads. NOTE: The
-munin_mysql_password will be taken from trocla, but it is not necessary on
-Debian systems as it will handled with Debian's /etc/mysql/debian.cnf.
+munin_mysql_password will be taken from what you passed to the mysql::server
+class, but it is not necessary on Debian systems as it will handled with
+Debian's /etc/mysql/debian.cnf.
 
 Nagios
 ------
 
 If you wish nagios to check mysql, you should set the variable "use_nagios" to 
 "true" in hiera along with the "nagios_check_mysql" variable to "true". A 
-password for the nagios mysql user which will be automatically created via trocla
-for you with reduced privileges used only for nagios checks. These should be
-set before you include mysql::server.
+password for the nagios mysql user will be created for you with reduced privileges
+used only for nagios checks. This will be what you passed as nagios_password_hash
+to mysql::server and should be a mysql md5 hash. These should be set before you
+include mysql::server.
 
 Unless you specify otherwise, the default nagios check which will be performed
 is the basic 'check_mysql' nagios plugin which simply tests connectivity to a

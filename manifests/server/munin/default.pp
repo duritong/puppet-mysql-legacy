@@ -1,7 +1,7 @@
 # manage plugins
 class mysql::server::munin::default {
   mysql_user{'munin@localhost':
-    password_hash => trocla("mysql_munin_${::fqdn}",'mysql','length: 32'),
+    password_hash => mysql_password($mysql::server::munin_password),
     require       => Exec['mysql_set_rootpw'],
   }
 
@@ -10,18 +10,17 @@ class mysql::server::munin::default {
     require     => Mysql_user['munin@localhost'],
   }
 
-  $munin_mysql_password = trocla("mysql_munin_${::fqdn}",'plain', 'length: 32')
   munin::plugin {
     [mysql_queries, mysql_slowqueries]:
-      config  => "env.mysqlopts --user=munin --password='${munin_mysql_password}' -h localhost",
+      config  => "env.mysqlopts --user=munin --password='${mysql::server::munin_password}' -h localhost",
       require => Mysql_grant['munin@localhost'];
     [mysql_bytes, mysql_threads]:
-      config  => "env.mysqlopts --user=munin --password=${munin_mysql_password} -h localhost",
+      config  => "env.mysqlopts --user=munin --password=${mysql::server::munin_password} -h localhost",
       require => Mysql_grant['munin@localhost'];
   }
 
   Munin::Plugin::Deploy{
-      config  => "env.mysqlopts --user=munin --password='${munin_mysql_password}' -h localhost",
+      config  => "env.mysqlopts --user=munin --password='${mysql::server::munin_password}' -h localhost",
       require => Mysql_grant['munin@localhost'],
   }
   munin::plugin::deploy{

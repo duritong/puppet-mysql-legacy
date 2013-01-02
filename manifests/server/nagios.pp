@@ -13,7 +13,7 @@ class mysql::server::nagios {
   }
 
   mysql_user{$nagios_mysql_user:
-    password_hash => trocla("mysql_nagios_${::fqdn}",'mysql','length: 32'),
+    password_hash => $mysql::server::nagios_password_hash,
     require       => Package['mysql'],
   }
 

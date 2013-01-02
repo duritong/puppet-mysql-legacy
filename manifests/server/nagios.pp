@@ -6,7 +6,7 @@ class mysql::server::nagios {
   } else {
     $nagios_mysql_user = 'nagios@%'
     nagios::service::mysql { 'connection-time':
-      check_hostname => $::fqdn,
+      check_host => $::fqdn,
       require => Mysql_grant[$nagios_mysql_user],
     }
   }

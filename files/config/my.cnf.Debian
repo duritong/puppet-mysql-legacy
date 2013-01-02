@@ -50,27 +50,29 @@ bind-address		= 127.0.0.1
 #
 key_buffer		= 16M
 max_allowed_packet	= 16M
-thread_stack		= 128K
-thread_cache_size	= 8
+thread_stack		= 192K
+thread_cache_size       = 8
 # This replaces the startup script and checks MyISAM tables if needed
 # the first time they are touched
-myisam-recover		= BACKUP
+myisam-recover         = BACKUP
 #max_connections        = 100
 #table_cache            = 64
 #thread_concurrency     = 10
 #
 # * Query Cache Configuration
 #
-query_cache_limit       = 1M
+query_cache_limit	= 1M
 query_cache_size        = 16M
 #
 # * Logging and Replication
 #
 # Both location gets rotated by the cronjob.
 # Be aware that this log type is a performance killer.
-#log		= /var/log/mysql/mysql.log
+# As of 5.1 you can enable the log at runtime!
+#general_log_file        = /var/log/mysql/mysql.log
+#general_log             = 1
 #
-# Error logging goes to syslog. This is a Debian improvement :)
+# Error logging goes to syslog due to /etc/mysql/conf.d/mysqld_safe_syslog.cnf.
 #
 # Here you can see queries with especially long duration
 #log_slow_queries	= /var/log/mysql/mysql-slow.log
@@ -86,11 +88,6 @@ expire_logs_days	= 10
 max_binlog_size         = 100M
 #binlog_do_db		= include_database_name
 #binlog_ignore_db	= include_database_name
-#
-# * BerkeleyDB
-#
-# Using BerkeleyDB is now discouraged as its support will cease in 5.1.12.
-#skip-bdb
 #
 # * InnoDB
 #
@@ -127,20 +124,7 @@ max_allowed_packet	= 16M
 key_buffer		= 16M
 
 #
-# * NDB Cluster
-#
-# See /usr/share/doc/mysql-server-*/README.Debian for more information.
-#
-# The following configuration is read by the NDB Data Nodes (ndbd processes)
-# not from the NDB Management Nodes (ndb_mgmd processes).
-#
-# [MYSQL_CLUSTER]
-# ndb-connectstring=127.0.0.1
-
-
-#
 # * IMPORTANT: Additional settings that can override those from this file!
 #   The files must end with '.cnf', otherwise they'll be ignored.
 #
 !includedir /etc/mysql/conf.d/
-

@@ -31,5 +31,7 @@ class mysql::server::munin::default {
       source => 'mysql/munin/mysql_qcache';
     'mysql_qcache_mem':
       source => 'mysql/munin/mysql_qcache_mem';
+    'mysql_size_all':
+      source => 'mysql/munin/mysql_size_all';
   }
 }

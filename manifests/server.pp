@@ -19,9 +19,9 @@ class mysql::server (
     default: { include mysql::server::base }
   }
 
-  if $manage_munin and $::mysql_exists == 'true' {
+  if $manage_munin and $::mysql_exists == true {
     if $munin_password == 'absent' {
-      fail("need to set the munin password")
+      fail('need to set the munin password')
     }
     case $::operatingsystem {
       debian:  { include mysql::server::munin::debian }
@@ -29,9 +29,9 @@ class mysql::server (
     }
   }
 
-  if $manage_nagios and $::mysql_exists == 'true' {
+  if $manage_nagios and $::mysql_exists == true {
     if $nagios_password_hash == 'absent' {
-      fail("need to set the nagios password hash")
+      fail('need to set the nagios password hash')
     }
     include mysql::server::nagios
   }

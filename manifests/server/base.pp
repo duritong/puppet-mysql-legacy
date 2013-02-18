@@ -66,6 +66,7 @@ class mysql::server::base {
 
   if $mysql::server::backup_cron {
     include mysql::server::cron::backup
+    include mysql::server::backup_helpers
   }
 
   if $mysql::server::optimize_cron {

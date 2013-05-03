@@ -11,8 +11,14 @@ class mysql::server::cron::backup {
     }
   }
 
+  if versioncmp($::mysql_version,'5.1.68') > 0 {
+    $backup_command = "/usr/bin/mysqldump --default-character-set=utf8 --all-databases --create-options --flush-logs --lock-tables --single-transaction --events --ignore-table=mysql.event | gzip > ${mysql::server::backup_dir}/mysqldump.sql.gz && chmod 600 ${mysql::server::backup_dir}/mysqldump.sql.gz"
+  } else {
+    $backup_command = "/usr/bin/mysqldump --default-character-set=utf8 --all-databases --create-options --flush-logs --lock-tables --single-transaction | gzip > ${mysql::server::backup_dir}/mysqldump.sql.gz && chmod 600 ${mysql::server::backup_dir}/mysqldump.sql.gz"
+  }
+
   cron { 'mysql_backup_cron':
-    command => "/usr/bin/mysqldump --default-character-set=utf8 --all-databases --create-options --flush-logs --lock-tables --single-transaction | gzip > ${mysql::server::backup_dir}/mysqldump.sql.gz && chmod 600 ${mysql::server::backup_dir}/mysqldump.sql.gz",
+    command => $backup_command,
     user    => 'root',
     minute  => 0,
     hour    => 1,

@@ -54,8 +54,20 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
   commands :mysql => '/usr/bin/mysql'
   commands :mysqladmin => '/usr/bin/mysqladmin'
 
+  # Optional defaults file
+  def self.defaults_file
+    if File.file?("#{Facter.value(:root_home)}/.my.cnf")
+      "--defaults-file=#{Facter.value(:root_home)}/.my.cnf"
+    else
+      nil 
+    end 
+  end 
+  def defaults_file
+    self.class.defaults_file
+  end 
+
   def mysql_flush 
-    mysqladmin "flush-privileges"
+    mysqladmin(defaults_file, "flush-privileges")
   end
 
   # this parses the
@@ -101,24 +113,24 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
       name = split_name(@resource[:name])
       case name[:type]
       when :user
-        mysql "mysql", "-e", "INSERT INTO user (host, user) VALUES ('%s', '%s')" % [
+        mysql(defaults_file, "mysql", "-e", "INSERT INTO user (host, user) VALUES ('%s', '%s')" % [
           name[:host], name[:user],
-        ]
+        ])
       when :db
-        mysql "mysql", "-e", "INSERT INTO db (host, user, db) VALUES ('%s', '%s', '%s')" % [
+        mysql(defaults_file, "mysql", "-e", "INSERT INTO db (host, user, db) VALUES ('%s', '%s', '%s')" % [
           name[:host], name[:user], name[:db],
-        ]
+        ])
       when :column
-        mysql "mysql", "-e", "INSERT INTO columns_priv (host, user, db, table, column_name) VALUES ('%s', '%s', '%s', '%s', '%s')" % [
+        mysql(defaults_file, "mysql", "-e", "INSERT INTO columns_priv (host, user, db, table, column_name) VALUES ('%s', '%s', '%s', '%s', '%s')" % [
           name[:host], name[:user], name[:db], name[:table], name[:column],
-        ]
+        ])
       end
       mysql_flush
     end
   end
 
   def destroy
-    mysql "mysql", "-e", "REVOKE ALL ON '%s'.* FROM '%s@%s'" % [ @resource[:privileges], @resource[:database], @resource[:name], @resource[:host] ]
+    mysql(defaults_file, "mysql", "-e", "REVOKE ALL ON '%s'.* FROM '%s@%s'" % [ @resource[:privileges], @resource[:database], @resource[:name], @resource[:host] ])
   end
   
   def row_exists?
@@ -130,7 +142,7 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
     if name[:type] == :column
       fields << :column
     end
-    not mysql( "mysql", "-NBe", 'SELECT "1" FROM %s WHERE %s' % [ name[:type], fields.map do |f| "%s = '%s'" % [f, name[f]] end.join(' AND ')]).empty?
+    not mysql(defaults_file, "mysql", "-NBe", 'SELECT "1" FROM %s WHERE %s' % [ name[:type], fields.map do |f| "%s = '%s'" % [f, name[f]] end.join(' AND ')]).empty?
   end
 
   def all_privs_set?
@@ -156,15 +168,15 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
 
     case name[:type]
     when :user
-      privs = mysql "mysql", "-Be", 'select * from user where user="%s" and host="%s"' % [ name[:user], name[:host] ]
+      privs = mysql(defaults_file, "mysql", "-Be", 'select * from user where user="%s" and host="%s"' % [ name[:user], name[:host] ])
     when :db
-      privs = mysql "mysql", "-Be", 'select * from db where user="%s" and host="%s" and db="%s"' % [ name[:user], name[:host], name[:db] ]
+      privs = mysql(defaults_file, "mysql", "-Be", 'select * from db where user="%s" and host="%s" and db="%s"' % [ name[:user], name[:host], name[:db] ])
     when :tables_priv
-      privs = mysql "mysql", "-NBe", 'select Table_priv from tables_priv where User="%s" and Host="%s" and Db="%s" and Table_name="%s"' % [ name[:user], name[:host], name[:db], name[:table_name] ]
+      privs = mysql(defaults_file, "mysql", "-NBe", 'select Table_priv from tables_priv where User="%s" and Host="%s" and Db="%s" and Table_name="%s"' % [ name[:user], name[:host], name[:db], name[:table_name] ])
       privs = privs.chomp.downcase
       return privs
     when :columns
-      privs = mysql "mysql", "-Be", 'select * from columns_priv where User="%s" and Host="%s" and Db="%s" and Table_name="%s" and Column_name="%s"' % [ name[:user], name[:host], name[:db], name[:table], name[:column] ]
+      privs = mysql(defaults_file, "mysql", "-Be", 'select * from columns_priv where User="%s" and Host="%s" and Db="%s" and Table_name="%s" and Column_name="%s"' % [ name[:user], name[:host], name[:db], name[:table], name[:column] ])
     end
 
     if privs.match(/^$/) 
@@ -213,7 +225,7 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
 
       if !revoke.empty?
          #puts "Revoking table privs: ", revoke
-         mysql "mysql", "-e", "REVOKE %s ON %s.%s FROM '%s'@'%s'" % [ revoke.join(", "), name[:db], name[:table_name], name[:user], name[:host] ]
+         mysql(defaults_file, "mysql", "-e", "REVOKE %s ON %s.%s FROM '%s'@'%s'" % [ revoke.join(", "), name[:db], name[:table_name], name[:user], name[:host] ])
       end
 
       set = privs - currently_set
@@ -245,7 +257,7 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
     #puts "stmt:", stmt
 
     if !set.empty?
-      mysql "mysql", "-Be", stmt
+      mysql(defaults_file, "mysql", "-Be", stmt)
       mysql_flush
     end
   end

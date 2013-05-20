@@ -7,11 +7,23 @@ Puppet::Type.type(:mysql_database).provide(:mysql,
   commands :mysqladmin => '/usr/bin/mysqladmin'
   commands :mysql => '/usr/bin/mysql'
 
+  def self.defaults_file
+    if File.file?("#{Facter.value(:root_home)}/.my.cnf")
+      "--defaults-file=#{Facter.value(:root_home)}/.my.cnf"
+    else
+      nil
+    end
+  end
+
+  def defaults_file
+    self.class.defaults_file
+  end 
+
   # retrieve the current set of mysql users
   def self.instances
     dbs = []
 
-    cmd = "#{command(:mysql)} mysql -NBe 'show databases'"
+    cmd = "#{command(:mysql)} mysql #{defaults_file} -NBe 'show databases'"
     execpipe(cmd) do |process|
       process.each do |line|
         dbs << new( { :ensure => :present, :name => line.chomp } )
@@ -26,7 +38,7 @@ Puppet::Type.type(:mysql_database).provide(:mysql,
       :ensure => :absent
     }
 
-    cmd = "#{command(:mysql)} mysql -NBe 'show databases'"
+    cmd = "#{command(:mysql)} #{defaults_file} mysql -NBe 'show databases'"
     execpipe(cmd) do |process|
       process.each do |line|
         if line.chomp.eql?(@resource[:name])
@@ -38,14 +50,14 @@ Puppet::Type.type(:mysql_database).provide(:mysql,
   end
 
   def create
-    mysqladmin "create", @resource[:name]
+    mysqladmin(defaults_file, "create", @resource[:name])
   end
   def destroy
-    mysqladmin "-f", "drop", @resource[:name]
+    mysqladmin(defaults_file, "-f", "drop", @resource[:name])
   end
 
   def exists?
-    if mysql("mysql", "-NBe", "show databases").match(/^#{@resource[:name]}$/)
+    if mysql(defaults_file, "mysql" ,"-NBe", "show databases").match(/^#{@resource[:name]}$/)
       true
     else
       false

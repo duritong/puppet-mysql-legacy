@@ -23,7 +23,7 @@ Puppet::Type.type(:mysql_database).provide(:mysql,
   def self.instances
     dbs = []
 
-    cmd = "#{command(:mysql)} mysql #{defaults_file} -NBe 'show databases'"
+    cmd = "#{command(:mysql)} #{defaults_file} mysql -NBe 'show databases'"
     execpipe(cmd) do |process|
       process.each do |line|
         dbs << new( { :ensure => :present, :name => line.chomp } )

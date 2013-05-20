@@ -177,7 +177,7 @@ Puppet::Type.type(:mysql_grant).provide(:mysql) do
         # transpose the lines, so we have key/value pairs
         privs = privs[0].zip(privs[1])
         privs = privs.select do |p| (/_priv$/) and p[1] == 'Y' end
-        privs.collect do |p| symbolize(p[0].downcase) end
+        privs.collect{|p| p[0].downcase.intern }
       end
     end
   end

@@ -43,7 +43,7 @@ Puppet::Type.newtype(:mysql_grant) do
   newproperty(:privileges, :array_matching => :all) do
     desc "The privileges the user should have. The possible values are implementation dependent."
     munge do |v|
-      symbolize(v)
+      v.intern
     end
 
     def should_to_s(newvalue = @should)

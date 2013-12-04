@@ -31,13 +31,6 @@ class mysql::server::base {
       owner   => mysql,
       group   => mysql,
       mode    => '0755';
-    'mysql_ibdata1':
-      path    => '/var/lib/mysql/data/ibdata1',
-      require => Package['mysql-server'],
-      before  => File['mysql_setmysqlpass.sh'],
-      owner   => mysql,
-      group   => mysql,
-      mode    => '0660';
     'mysql_setmysqlpass.sh':
       path    => '/usr/local/sbin/setmysqlpass.sh',
       source  => "puppet:///modules/mysql/scripts/${::operatingsystem}/setmysqlpass.sh",
@@ -80,7 +73,7 @@ class mysql::server::base {
     require   => Package['mysql-server'],
   }
 
-  if $::mysql_exists == 'true' {
+  if str2bool($::mysql_exists) {
     include mysql::server::account_security
 
     # Collect all databases and users

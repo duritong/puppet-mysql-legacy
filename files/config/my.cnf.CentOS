@@ -9,8 +9,6 @@ old_passwords=0
 
 bind-address=127.0.0.1
 
-skip-bdb
-
 # Query cache is used to cache SELECT results and later return them
 # without actual executing the same query once again. Having the query
 # cache enabled may result in significant speed improvements, if your

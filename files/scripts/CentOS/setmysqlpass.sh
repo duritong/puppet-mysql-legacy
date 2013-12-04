@@ -13,8 +13,11 @@ UPDATE mysql.user SET Password=PASSWORD('$rootpw') WHERE User='root' AND Host='l
 FLUSH PRIVILEGES;
 EOF
 killall mysqld
+sleep 15
 # chown to be on the safe side
-chown mysql.mysql /var/lib/mysql/mysql-bin.*
+ls -al /var/lib/mysql/mysql-bin.* &> /dev/null
+[ $? == 0 ] && chown mysql.mysql /var/lib/mysql/mysql-bin.*
+chown -R mysql.mysql /var/lib/mysql/data/
 
 /sbin/service mysqld start
 

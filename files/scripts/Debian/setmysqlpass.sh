@@ -17,6 +17,7 @@ sleep 15
 # chown to be on the safe side
 ls -al /var/lib/mysql/mysql-bin.* &> /dev/null
 [ $? == 0 ] && chown mysql.mysql /var/lib/mysql/mysql-bin.*
+chown -R mysql.mysql /var/lib/mysql/data/
 
 /etc/init.d/mysql start
 

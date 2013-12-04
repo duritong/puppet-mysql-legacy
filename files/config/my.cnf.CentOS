@@ -25,7 +25,7 @@ query_cache_size = 64M
 # indexes well, if log_long_format is enabled. It is normally good idea
 # to have this turned on if you frequently add new queries to the
 # system.
-log_slow_queries
+slow_query_log
 
 # How many threads we should keep in a cache for reuse. When a client
 # disconnects, the client's threads are put in the cache if there aren't
@@ -34,7 +34,7 @@ log_slow_queries
 # connections. (Normally this doesn't give a notable performance
 # improvement if you have a good thread implementation.)
 thread_cache_size = 4
-     
+
 # InnoDB, unlike MyISAM, uses a buffer pool to cache both indexes and
 # row data. The bigger you set this the less disk I/O is needed to
 # access data in tables. On a dedicated database server you may set this

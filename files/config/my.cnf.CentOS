@@ -9,6 +9,9 @@ old_passwords=0
 
 bind-address=127.0.0.1
 
+# Disabling symbolic-links is recommended to prevent assorted security risks
+symbolic-links=0
+
 # Query cache is used to cache SELECT results and later return them
 # without actual executing the same query once again. Having the query
 # cache enabled may result in significant speed improvements, if your

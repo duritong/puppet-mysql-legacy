@@ -8,10 +8,10 @@ class mysql::server::base {
     path    => '/etc/mysql/my.cnf',
     source  => [
       "puppet:///modules/site_mysql/${::fqdn}/my.cnf",
-      "puppet:///modules/site_mysql/my.cnf.${::operatingsystem}.{lsbdistcodename}",
+      "puppet:///modules/site_mysql/my.cnf.${::operatingsystem}.{::operatingsystemmajrelease}",
       "puppet:///modules/site_mysql/my.cnf.${::operatingsystem}",
       'puppet:///modules/site_mysql/my.cnf',
-      "puppet:///modules/mysql/config/my.cnf.${::operatingsystem}.{lsbdistcodename}",
+      "puppet:///modules/mysql/config/my.cnf.${::operatingsystem}.{::operatingsystemmajrelease}",
       "puppet:///modules/mysql/config/my.cnf.${::operatingsystem}",
       'puppet:///modules/mysql/config/my.cnf'
     ],

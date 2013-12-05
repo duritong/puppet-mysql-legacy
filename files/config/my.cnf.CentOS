@@ -84,3 +84,4 @@ quick
 max_allowed_packet = 16M
 default-character-set=utf8
 
+!includedir /etc/mysql/conf.d/

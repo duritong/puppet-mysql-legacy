@@ -7,7 +7,11 @@ socket=/var/lib/mysql/mysql.sock
 # clients (those using the mysqlclient10 compatibility package).
 old_passwords=0
 
+character-set-server        = utf8
+skip-name-resolve
+
 bind-address=127.0.0.1
+max_allowed_packet = 10M
 
 # Disabling symbolic-links is recommended to prevent assorted security risks
 symbolic-links=0
@@ -46,11 +50,26 @@ thread_cache_size = 4
 # cause paging in the operating system.  Note that on 32bit systems you
 # might be limited to 2-3.5G of user level memory per process, so do not
 # set it too high.
+innodb_data_home_dir = /var/lib/mysql/data
+innodb_data_file_path = ibdata1:10M:autoextend
+innodb_log_group_home_dir = /var/lib/mysql/
 innodb_buffer_pool_size = 50MB
 
 innodb_file_per_table
 
 query_cache_limit=5M
+
+[mysql]
+no-auto-rehash
+# Remove the next comment character if you are not familiar with SQL
+#safe-updates
+default-character-set=utf8
+
+[mysqlimport]
+default-character-set=utf8
+
+[mysqlshow]
+default-character-set=utf8
 
 [mysql.server]
 user=mysql
@@ -59,3 +78,9 @@ basedir=/usr
 [mysqld_safe]
 log-error=/var/log/mysqld.log
 pid-file=/var/run/mysqld/mysqld.pid
+
+[mysqldump]
+quick
+max_allowed_packet = 16M
+default-character-set=utf8
+

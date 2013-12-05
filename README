@@ -6,6 +6,8 @@ This module manages your mysql resources.
 Requirements
 ------------
 
+The puppetlabs-stdlib module is required for some functions used in this module.
+
 If you are wanting munin integration, you will need the munin module installed.
 
 If you are wanting shorewall integration, you will need the shorewall module

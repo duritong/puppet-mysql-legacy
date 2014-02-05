@@ -4,6 +4,8 @@ test -f /root/.my.cnf || exit 1
 
 rootpw=$(grep password /root/.my.cnf | sed -e 's/^[^=]*= *\(.*\) */\1/')
 
+/usr/bin/mysqladmin -uroot --password="${rootpw}" status > /dev/null && echo "Nothing to do as the password already works" && exit 0
+
 /sbin/service mysqld stop
 
 /usr/libexec/mysqld --skip-grant-tables --user=root --datadir=/var/lib/mysql/data --log-bin=/var/lib/mysql/mysql-bin &

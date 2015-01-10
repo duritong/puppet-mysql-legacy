@@ -3,15 +3,18 @@ datadir=/var/lib/mysql/data
 log-bin=/var/lib/mysql/mysql-bin
 expire_logs_days=5
 socket=/var/lib/mysql/mysql.sock
-# Disabling symbolic-links is recommended to prevent assorted security risks
-symbolic-links=0
-# Settings user and group are ignored when systemd is used.
-# If you need to run mysqld under a different user or group,
-# customize your systemd unit file for mariadb according to the
-# instructions in http://fedoraproject.org/wiki/Systemd
+# Default to using old password format for compatibility with mysql 3.x
+# clients (those using the mysqlclient10 compatibility package).
+old_passwords=0
+
+character-set-server        = utf8
+skip-name-resolve
 
 bind-address=127.0.0.1
 max_allowed_packet = 10M
+
+# Disabling symbolic-links is recommended to prevent assorted security risks
+symbolic-links=0
 
 # Query cache is used to cache SELECT results and later return them
 # without actual executing the same query once again. Having the query
@@ -56,11 +59,29 @@ innodb_file_per_table
 
 query_cache_limit=5M
 
-[mysqld_safe]
-log-error=/var/log/mariadb/mariadb.log
-pid-file=/var/run/mariadb/mariadb.pid
+[mysql]
+no-auto-rehash
+# Remove the next comment character if you are not familiar with SQL
+#safe-updates
+default-character-set=utf8
 
-#
-# include all files from the config directory
-#
-!includedir /etc/my.cnf.d
+[mysqlimport]
+default-character-set=utf8
+
+[mysqlshow]
+default-character-set=utf8
+
+[mysql.server]
+user=mysql
+basedir=/usr
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+
+[mysqldump]
+quick
+max_allowed_packet = 16M
+default-character-set=utf8
+
+!includedir /etc/mysql/conf.d/

@@ -1,7 +1,16 @@
 # centos specific things
 class mysql::server::centos inherits mysql::server::clientpackage {
-  Service['mysql']{
-    name  => 'mysqld',
+  if $::operatingsystemmajrelease > 6 {
+    Package['mysql-server']{
+      name  => 'mariadb-server',
+    }
+    Service['mysql']{
+      name  => 'mariadb',
+    }
+  } else {
+    Service['mysql']{
+      name  => 'mysqld',
+    }
   }
   File['mysql_main_cnf']{
     path => '/etc/my.cnf',

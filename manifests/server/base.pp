@@ -33,7 +33,8 @@ class mysql::server::base {
       mode    => '0755';
     'mysql_setmysqlpass.sh':
       path    => '/usr/local/sbin/setmysqlpass.sh',
-      source  => "puppet:///modules/mysql/scripts/${::operatingsystem}/setmysqlpass.sh",
+      source  => ["puppet:///modules/mysql/scripts/${::operatingsystem}/setmysqlpass.sh.${::operatingsystemmajrelease}",
+                  "puppet:///modules/mysql/scripts/${::operatingsystem}/setmysqlpass.sh", ],
       require => Package['mysql-server'],
       owner   => root,
       group   => 0,
@@ -72,12 +73,8 @@ class mysql::server::base {
     require   => Package['mysql-server'],
   }
 
-  if str2bool($::mysql_exists) {
-    include mysql::server::account_security
-
-    # Collect all databases and users
-    Mysql_database<<| tag == "mysql_${::fqdn}" |>>
-    Mysql_user<<| tag == "mysql_${::fqdn}"  |>>
-    Mysql_grant<<| tag == "mysql_${::fqdn}" |>>
-  }
+  # Collect all databases and users
+  Mysql_database<<| tag == "mysql_${::fqdn}" |>>
+  Mysql_user<<| tag == "mysql_${::fqdn}"  |>>
+  Mysql_grant<<| tag == "mysql_${::fqdn}" |>>
 }

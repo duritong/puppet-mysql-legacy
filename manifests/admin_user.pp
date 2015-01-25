@@ -14,8 +14,10 @@ define mysql::admin_user(
     password_hash => $password_hash,
     require       => Exec['mysql_set_rootpw'],
   }
-  mysql_grant{"${name}@${host}":
-    privileges  => 'all',
-    require     => Mysql_user["${name}@${host}"],
+  if $ensure == 'present' {
+    mysql_grant{"${name}@${host}":
+      privileges  => 'all',
+      require     => Mysql_user["${name}@${host}"],
+    }
   }
 }

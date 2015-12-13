@@ -13,10 +13,10 @@ class mysql::server (
   $nagios_notcp         = false
 ) {
   case $::operatingsystem {
-    gentoo:  { include mysql::server::gentoo }
-    centos:  { include mysql::server::centos }
-    debian:  { include mysql::server::debian }
-    default: { include mysql::server::base }
+    'Gentoo':  { include ::mysql::server::gentoo }
+    'CentOS':  { include ::mysql::server::centos }
+    'Debian':  { include ::mysql::server::debian }
+    default: { include ::mysql::server::base }
   }
 
   if $manage_munin {
@@ -24,8 +24,8 @@ class mysql::server (
       fail('need to set the munin password')
     }
     case $::operatingsystem {
-      debian:  { include mysql::server::munin::debian }
-      default: { include mysql::server::munin::default }
+      'Debian':  { include ::mysql::server::munin::debian }
+      default: { include ::mysql::server::munin::default }
     }
   }
 
@@ -33,10 +33,10 @@ class mysql::server (
     if $nagios_password_hash == 'absent' {
       fail('need to set the nagios password hash')
     }
-    include mysql::server::nagios
+    include ::mysql::server::nagios
   }
 
   if $manage_shorewall {
-    include shorewall::rules::mysql
+    include ::shorewall::rules::mysql
   }
 }

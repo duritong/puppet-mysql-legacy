@@ -19,7 +19,7 @@ class mysql::server (
     default: { include mysql::server::base }
   }
 
-  if $manage_munin and $::mysql_exists == 'true' {
+  if $manage_munin {
     if $munin_password == 'absent' {
       fail('need to set the munin password')
     }
@@ -29,7 +29,7 @@ class mysql::server (
     }
   }
 
-  if $manage_nagios and $::mysql_exists == 'true' {
+  if $manage_nagios {
     if $nagios_password_hash == 'absent' {
       fail('need to set the nagios password hash')
     }

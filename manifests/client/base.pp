@@ -5,8 +5,8 @@ class mysql::client::base {
     alias  => 'mysql-client',
   }
   if $::operatingsystem in ['RedHat', 'CentOS'] and
-    $::operatingsystemmajrelease > 6 {
-      Package[mysql]{
+    versioncmp($::operatingsystemmajrelease,'6') > 0 {
+      Package['mysql']{
         name => 'mariadb'
       }
   }

@@ -1,6 +1,6 @@
 # centos specific things
 class mysql::server::centos inherits mysql::server::clientpackage {
-  if $::operatingsystemmajrelease > 6 {
+  if versioncmp($::operatingsystemmajrelease,'6') > 0 {
     Package['mysql-server']{
       name  => 'mariadb-server',
     }

@@ -56,6 +56,9 @@ innodb_file_per_table
 
 query_cache_limit=5M
 
+# safer for a variety of use cases
+binlog-format=MIXED
+
 [mysqld_safe]
 log-error=/var/log/mariadb/mariadb.log
 pid-file=/var/run/mariadb/mariadb.pid

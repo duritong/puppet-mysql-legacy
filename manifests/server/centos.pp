@@ -31,5 +31,18 @@ class mysql::server::centos inherits mysql::server::clientpackage {
       group   => 0,
       mode    => '0644',
       notify  => Service['mysql'];
+    '/etc/logrotate.d/mariadb':
+      source  => 'puppet:///modules/mysql/config/logrotate.conf',
+      require => Service['mysql'],
+      owner   => root,
+      group   => 0,
+      mode    => '0644';
+  }
+
+  if versioncmp($::operatingsystemmajrelease,'6') == 0 {
+    File['/etc/logrotate.d/mariadb']{
+      path    => '/etc/logrotate.d/mysqld',
+      source  => 'puppet:///modules/mysql/config/logrotate.conf.CentOS.6'
+    }
   }
 }

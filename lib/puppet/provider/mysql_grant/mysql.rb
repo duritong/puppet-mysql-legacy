@@ -26,7 +26,8 @@ else
   ]
 end
 
-if mysql_version =~ /^5.1/ && mysql_version.split('.').last.to_i >= 6
+split_mysql_version = mysql_version.split('.')
+if (mysql_version =~ /^5.1/ && split_mysql_version.last.to_i >= 6) || (mysql_version =~ /^5/ && split_mysql_version[1].to_i > 1)
   MYSQL_DB_PRIVS = [ :select_priv, :insert_priv, :update_priv, :delete_priv,
     :create_priv, :drop_priv, :grant_priv, :references_priv, :index_priv,
     :alter_priv, :create_tmp_table_priv, :lock_tables_priv, :create_view_priv,

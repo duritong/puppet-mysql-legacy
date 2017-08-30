@@ -1,6 +1,7 @@
 # optimize mysql databases regurarely
 class mysql::server::cron::optimize {
 
+  require ruby
   file { 'mysql_optimize_script':
     path    => '/usr/local/sbin/optimize_mysql_tables.rb',
     source  => 'puppet:///modules/mysql/scripts/optimize_tables.rb',

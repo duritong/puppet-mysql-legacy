@@ -2,27 +2,22 @@
 class mysql::server::cron::backup {
   if $mysql::server::manage_backup_dir {
     file { 'mysql_backup_dir':
-      ensure  => directory,
-      path    => $mysql::server::backup_dir,
-      before  => Cron['mysql_backup_cron'],
-      owner   => root,
-      group   => 0,
-      mode    => '0700';
+      ensure => directory,
+      path   => $mysql::server::backup_dir,
+      before => Cron['mysql_backup_cron'],
+      owner  => root,
+      group  => 0,
+      mode   => '0700';
     }
   }
 
-  if ($facts['mysql_version'] and versioncmp($facts['mysql_version'],'5.1.68') > 0) or
-    ($facts['osfamily'] == 'RedHat' and versioncmp($facts['operatingsystemmajrelease'],'5') > 0) {
-    $backup_command = "/usr/bin/mysqldump --default-character-set=utf8 --all-databases --create-options --flush-logs --lock-tables --single-transaction --events --ignore-table=mysql.event | gzip > ${mysql::server::backup_dir}/mysqldump.sql.gz && chmod 600 ${mysql::server::backup_dir}/mysqldump.sql.gz"
-  } else {
-    $backup_command = "/usr/bin/mysqldump --default-character-set=utf8 --all-databases --create-options --flush-logs --lock-tables --single-transaction | gzip > ${mysql::server::backup_dir}/mysqldump.sql.gz && chmod 600 ${mysql::server::backup_dir}/mysqldump.sql.gz"
-  }
+  $backup_command = "/usr/bin/mysqldump --default-character-set=utf8mb4 --all-databases --create-options --flush-logs --lock-tables --single-transaction --events --ignore-table=mysql.event | gzip > ${mysql::server::backup_dir}/mysqldump.sql.gz && chmod 600 ${mysql::server::backup_dir}/mysqldump.sql.gz"
 
   cron { 'mysql_backup_cron':
     command => $backup_command,
     user    => 'root',
     minute  => 0,
     hour    => 1,
-    require => [ Exec['mysql_set_rootpw'], File['mysql_root_cnf'] ],
+    require => [Exec['mysql_set_rootpw'], File['mysql_root_cnf'],],
   }
 }
